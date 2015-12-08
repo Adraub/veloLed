@@ -1,0 +1,17 @@
+
+BL51 BANKED LINKER/LOCATER V6.22 - SN: Eval Version
+COPYRIGHT KEIL ELEKTRONIK GmbH 1987 - 2009
+"C:\Users\Adraub\Documents\GitHub\veloLed\main.obj"  TO "C:\Users\Adraub\Documents\GitHub\veloLed\veloLed" RS(256) PL(68) PW(78)  
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_PUT_CHAR_?MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0079H BYTE ( 5%) *
+******************************************************************************
+
+>> 
+>> 
+>> 
+Program Size: data=30.1 xdata=0 code=1177
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
