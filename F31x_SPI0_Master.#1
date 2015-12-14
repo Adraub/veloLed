@@ -55,6 +55,7 @@
 //-----------------------------------------------------------------------------
 
 #include <C8051F310.h>                 // SFR declarations
+#include "stdio.h"
 
 //-----------------------------------------------------------------------------
 // Global Constants
@@ -83,8 +84,16 @@
 #define  ERROR_OCCURRED    0x40        // Indicator for the Slave to tell the
                                        // Master an error occurred
 
-sbit LED = P3^3;                       // LED='1' means ON
+#define  ACCELERO_RESOLUTION    31.2
 
+sbit LED = P3^3;                       // LED='1' means ON
+sbit SW2 = P0^7;                          // SW2='0' means switch pressed
+//-----------------------------------------------------------------------------
+// 16-bit SFR Definitions for 'F30x
+//-----------------------------------------------------------------------------
+
+sfr16 TMR2RL   = 0xca;                    // Timer2 reload value
+sfr16 TMR2     = 0xcc;                    // Timer2 counter
 
 //-----------------------------------------------------------------------------
 // Global Variables
@@ -107,6 +116,10 @@ void Oscillator_Init (void);
 void Port_Init (void);
 void SPI0_Init (void);
 void Init_Device (void);
+void Timer2_Init (int counts);
+void Timer2_ISR (void);
+void UART0_Init (void);
+void Delay(void);
 
 void SPI_Byte_Write (unsigned char addr);
 void SPI_Byte_Read (unsigned char addr);
@@ -120,7 +133,8 @@ void main (void)
    int accel[3]={0,0,0};
 
    Init_Device ();                     // Initializes hardware peripherals
-
+	Timer2_Init (0xFFF0);                  // Init Timer2
+	UART0_Init();
    EA = 1;                             // Enable global interrupts
 
    LED = 0;
@@ -157,25 +171,30 @@ void main (void)
    // Write a value
    SPI_Byte_Write (0x2D);
 
-	// Read the array back from the slave
-   SPI_Array_Read (0x32);
+
+   
+
+   while (1) {                            // spin forever
+			// Read the array back from the slave
+  	 SPI_Array_Read (0x32);
 
    // Read the same value back
 
 	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes (8-bits). To get the full value, two bytes must be combined for each axis.
   //The X value is stored in values[0] and values[1].
-  accel[0] = ((int)SPI_Data_Array[1]<<8)|(int)SPI_Data_Array[0];
+ 	 accel[0] = ((int)SPI_Data_Array[1]<<8)|(int)SPI_Data_Array[0];
   //The Y value is stored in values[2] and values[3].
-  accel[1] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
+ 	 accel[1] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
   //The Z value is stored in values[4] and values[5].
-  accel[2] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
-  accel[0]=(int)(accel[0]*31.2);
-  accel[1]=(int)(accel[1]*31.2);
-  accel[2]=(int)(accel[2]*31.2);
-   
-
-   while(1){;}
-
+ 	 accel[2] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
+ 	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
+ 	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
+ 	 accel[2]=(int)(accel[2]*ACCELERO_RESOLUTION);
+     printf("x= %d mg, ",accel[0]);
+	 printf("y= %d mg, ",accel[1]);
+	 printf("z= %d mg \n",accel[2]);
+	 Delay();
+   }
    
 }
 
@@ -196,7 +215,6 @@ void main (void)
 void PCA0_Init (void)
 {
    PCA0MD &= ~0x40;                    // Disable the Watchdog Timer
-   PCA0MD = 0x00;
 }
 
 //-----------------------------------------------------------------------------
@@ -212,8 +230,9 @@ void PCA0_Init (void)
 //-----------------------------------------------------------------------------
 void Oscillator_Init (void)
 {
-   OSCICN = 0x83;                      // Set the internal oscillator to
+   OSCICN = 0xc3;                     // Set the internal oscillator to
                                        // 24.5 MHz
+	RSTSRC = 0x04;                         // enable missing clock detector
 }
 
 //-----------------------------------------------------------------------------
@@ -235,11 +254,10 @@ void Oscillator_Init (void)
 //-----------------------------------------------------------------------------
 void PORT_Init (void)
 {
+	P0MDOUT |= 0x10;                       // TxD (P0.4) as push-pull
    P1MDOUT = 0x0D;                     // Make SCK, MOSI, and NSS push-pull
    P3MDOUT = 0x08;                     // Make the LED push-pull
 
-   //XBR0 = 0x02;                        // Enable the SPI on the XBAR
-   //XBR1 = 0x40;                        // Enable the XBAR and weak pull-ups
 
    
 	XBR0=0x03;           //enable uart and spi
@@ -436,6 +454,7 @@ void SPI_ISR (void) interrupt 6
                SPI_Data_Array[array_index] = SPI0DAT; // Read the last data
                                                       // without sending a
                                                       // dummy byte
+				array_index=0;
 
                break;
          }
@@ -549,5 +568,84 @@ void SPI_Array_Read (unsigned char addr)
 
    // The rest of this command will be handled by the SPI ISR, which will
    // trigger when SPIF is set from sending the Command
+}
+
+//-----------------------------------------------------------------------------
+// Timer2_Init
+//-----------------------------------------------------------------------------
+//
+// Configure Timer2 to 16-bit auto-reload and generate an interrupt at
+// interval specified by <counts> using SYSCLK/48 as its time base.
+//
+void Timer2_Init (int n)
+{
+                                          // use SYSCLK/12 as timebase
+   CKCON  &= ~0x10;                       // Timer2 clocked based on T2XCLK;
+
+   TMR2CN  = 0x04;                        // Stop Timer2; Clear TF2; Voir datasheet p199
+   TMR2RL  = -n;                          // Init reload values
+
+   ET2 = 1;
+
+}
+
+
+//-----------------------------------------------------------------------------
+// UART0_Init
+//-----------------------------------------------------------------------------
+//
+
+
+void UART0_Init()
+{
+   //Timer 1 init
+   TH1     = 0x96;                        // débordement à 57600Hz
+	
+   TMOD   |= 0x20;                        // mode2 autoreload
+   CKCON  &= 0xF4;                        // sysclk pour timer1
+   TR1     = 1;                           // timer1 run
+
+
+   //UART Init
+   REN0    = 1;                           // reception autorisée
+   SBUF0   = '\n';                        // pour commencer nouvelle  
+}
+
+//-----------------------------------------------------------------------------
+// Interrupt Service Routines
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Timer2_ISR
+//-----------------------------------------------------------------------------
+// This routine changes the state of the LED whenever Timer2 overflows.
+//
+void Timer2_ISR (void) interrupt 5
+{
+   if (~SW2) {
+      LED = 1;
+   }
+   else {
+      LED = ~LED;
+   }
+
+   TF2H = 0;                              // clear Timer2 interrupt flag
+}
+
+//-----------------------------------------------------------------------------
+// Delay
+//-----------------------------------------------------------------------------
+//
+// Return Value : None
+// Parameters   : None
+//
+// Delay for little while (used for blinking the LEDs)
+//
+//-----------------------------------------------------------------------------
+void Delay (void)
+{
+   unsigned long count;
+
+   for (count = 200000; count > 0; count--);
 }
 

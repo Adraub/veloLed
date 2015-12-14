@@ -4,11 +4,11 @@ COPYRIGHT KEIL ELEKTRONIK GmbH 1987 - 2009
 "C:\Users\Adraub\Documents\GitHub\veloLed\F31x_SPI0_Master.obj"  TO "C:\Users\Adraub\Documents\GitHub\veloLed\veloLed" RS(256) PL(68) PW(78) 
 
 ******************************************************************************
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 01C9H BYTE (22%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 029BH BYTE (32%) *
 ******************************************************************************
 
 >> 
 >> 
 >> 
-Program Size: data=25.1 xdata=0 code=1314
+Program Size: data=54.2 xdata=0 code=3683
 LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
