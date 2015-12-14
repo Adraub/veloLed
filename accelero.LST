@@ -1,0 +1,234 @@
+C51 COMPILER V9.50a   ACCELERO                                                             12/14/2015 14:24:15 PAGE 1   
+
+
+C51 COMPILER V9.50a, COMPILATION OF MODULE ACCELERO
+OBJECT MODULE PLACED IN accelero.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\c51.exe accelero.c DB OE BR INCDIR(c:\SiLabs\MCU\Inc)
+
+line level    source
+
+   1          
+   2          //-----------------------------------------------------------------------------
+   3          // F31x_Blinky.c
+   4          //-----------------------------------------------------------------------------
+   5          // Copyright (C) 2007 Silicon Laboratories, Inc.
+   6          //
+   7          // AUTH: JS
+   8          // DATE: 03 JUL 02
+   9          //
+  10          // This program flashes the green LED on the C8051F31x target board about
+  11          // five times a second using the interrupt handler for Timer2.
+  12          //
+  13          // Target: C8051F31x
+  14          //
+  15          // Tool chain: KEIL Eval 'c'
+  16          //
+  17          
+  18          //-----------------------------------------------------------------------------
+  19          // Includes
+  20          //-----------------------------------------------------------------------------
+  21          #include <c8051f310.h>                    // SFR declarations
+  22          #include <stdio.h>
+  23          
+  24          #define SYSCLK       24500000 / 8
+  25          
+  26          sbit CS = P1^3;
+  27          // SPI bus pins
+  28          sbit MOSI = P1^2;                                                 // 9bit SPI MOSI pin
+  29          sbit MISO = P1^1;                                                 // 9bit SPI MISO pin
+  30          sbit SCK = P1^0;
+  31          
+  32          
+  33          void PORT_Init (void);
+  34          void SYSCLK_Init (void);
+  35          void SPI_Read( unsigned char addr, unsigned char *buffer, unsigned char size );
+  36          void SPI_Write( unsigned char w );
+  37          void SPI_Init();
+  38          void SPI_write_cmd(unsigned char c);
+  39          
+  40          
+  41          void PORT_Init (void)
+  42          {
+  43   1      P0SKIP=0xCF;        //decale de maniere a avoir le spi0 sur port 1
+  44   1      XBR0=0x01;           //enable uart and spi
+  45   1      XBR1=0x40;            //crossbar enabled, on decale
+  46   1      P1MDOUT|=0x0D;
+  47   1      
+  48   1      }
+  49          
+  50          
+  51          void SYSCLK_Init (void)
+  52          {
+  53   1      // disable watchdog timer
+  54   1         PCA0MD &= ~0x40;                       // WDTE = 0 (clear watchdog timer
+  55   1                                                // enable)
+C51 COMPILER V9.50a   ACCELERO                                                             12/14/2015 14:24:15 PAGE 2   
+
+  56   1         OSCICN = 0xc3;                         // configure internal oscillator for
+  57   1                                                // its lowest frequency
+  58   1         RSTSRC = 0x04;                         // enable missing clock detector
+  59   1      }
+  60          
+  61          void SPI_Init()
+  62          {
+  63   1              SCK = 0;
+  64   1              MOSI = 0;
+  65   1              MISO = 1;
+  66   1              CS=0;
+  67   1      }
+  68          
+  69          
+  70          #define WAIT { int wait=0; wait++; }
+  71          
+  72          void SPI_write_cmd(unsigned char c)
+  73          {
+  74   1              unsigned char b;
+  75   1      
+  76   1              EA=0;
+  77   1              // 1st bit '0'
+  78   1              MOSI = 0;
+  79   1              WAIT
+  80   1              SCK = 1; // tic
+  81   1              WAIT
+  82   1              SCK = 0; // toc
+  83   1              // Ecriture des autres bits sur le bus
+  84   1              for(b=0x80;b>0;b=b>>1)
+  85   1              {
+  86   2                      WAIT
+  87   2                      MOSI = (c&b)?1:0;
+  88   2                      WAIT
+  89   2                      SCK = 1; // tic
+  90   2                      WAIT
+  91   2                      SCK = 0; // toc
+  92   2              }
+  93   1                      WAIT
+  94   1              MOSI=0;
+  95   1              EA=1;
+  96   1      }
+  97          
+  98          
+  99          
+ 100          void SPI_Write( unsigned char w )
+ 101          {
+ 102   1              unsigned char b;
+ 103   1              EA=0;
+ 104   1      
+ 105   1              // Ecriture des bits sur le bus
+ 106   1              for( b=0x80;b>0;b=b>>1)
+ 107   1              {
+ 108   2                      MOSI = (w&b)?1:0;
+ 109   2                      SCK = 1; // tic
+ 110   2                      SCK = 0; // toc
+ 111   2              }
+ 112   1              MOSI = 0;
+ 113   1              EA=1;
+ 114   1      
+ 115   1      }
+ 116          
+ 117          
+C51 COMPILER V9.50a   ACCELERO                                                             12/14/2015 14:24:15 PAGE 3   
+
+ 118          void SPI_Read( unsigned char addr, unsigned char *buffer, unsigned char size )
+ 119          {
+ 120   1              unsigned char b, i;
+ 121   1      
+ 122   1              EA=0;
+ 123   1      
+ 124   1              addr |= 0x80 | ( size > 1 ? 0x40 : 0x00 );
+ 125   1      
+ 126   1              // Ecriture des bits sur le bus
+ 127   1              for( b=0x80;b>0;b=b>>1)
+ 128   1              {
+ 129   2                      WAIT
+ 130   2                      MOSI = (addr&b)?1:0;
+ 131   2                      WAIT
+ 132   2                      SCK = 1; // tic
+ 133   2                      WAIT
+ 134   2                      SCK = 0; // toc
+ 135   2              }
+ 136   1                      WAIT
+ 137   1              MOSI = 0;
+ 138   1      
+ 139   1      
+ 140   1              for ( i = 0 ; i < size ; i++ )
+ 141   1              {
+ 142   2                      buffer[i] = 0x00;
+ 143   2      
+ 144   2                      for ( b = 0x80 ; b >0 ; b >>= 1 )
+ 145   2                      {
+ 146   3                      WAIT
+ 147   3                              SCK = 1; // tic
+ 148   3                      WAIT
+ 149   3                              SCK = 0; // toc
+ 150   3                      WAIT
+ 151   3                      WAIT
+ 152   3                      WAIT
+ 153   3                      WAIT
+ 154   3                      WAIT
+ 155   3                              if ( MISO ) buffer[i] |= b;
+ 156   3                      }
+ 157   2              }
+ 158   1      
+ 159   1      
+ 160   1              EA=1;
+ 161   1      
+ 162   1      
+ 163   1      
+ 164   1      }
+ 165          
+ 166          void main(void){
+ 167   1      char b;
+ 168   1                      unsigned char buffer[20];
+ 169   1                 SYSCLK_Init ();
+ 170   1             PORT_Init ();                          // Initialize crossbar and GPIO
+ 171   1      
+ 172   1                      SPI_Init();
+ 173   1              
+ 174   1                      SPI_Read(0x00,buffer,1);
+ 175   1                      b = 9;
+ 176   1                      //SPI_write_cmd(0x31);          //envoie a l'adresse 31(base6) avec R/W=0 et multipleBytes=0
+ 177   1             // SPI_Write(0x03);                //met le bit 6 a 0 sur ladresse 31, indique au gyro qu'on fonctionne en 3wir
+             -e
+ 178   1                      SPI_Read(0x2C,buffer,1);
+C51 COMPILER V9.50a   ACCELERO                                                             12/14/2015 14:24:15 PAGE 4   
+
+ 179   1                      b = 9;
+ 180   1              //& range de +/- 16g et resolution à 10bits
+ 181   1      
+ 182   1      
+ 183   1              //      SPI_write_cmd(0x38);          //envoie a l'adresse 38(base6) avec R/W=0 et multipleBytes=0
+ 184   1           //   SPI_Write(0x20); //Mode bypass & interruption used INT2
+ 185   1              SPI_Read(0x30,buffer,1);
+ 186   1          while(1){
+ 187   2      
+ 188   2      
+ 189   2          }
+ 190   1      
+ 191   1              
+ 192   1      
+ 193   1      }
+ 194          
+ 195          
+ 196          
+ 197          
+ 198          
+ 199          
+ 200          
+ 201          
+ 202          
+ 203          
+ 204          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    511    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      29
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

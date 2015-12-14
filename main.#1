@@ -95,7 +95,6 @@ void PORT_Init (void)
    XBR1     = 0x40;                       // Enable crossbar and weak pull-ups
    P0MDOUT |= 0x10;                       // TxD (P0.4) as push-pull
    P3MDOUT |= 0x08;                       // enable LED as a push-pull output
-   P1MDOUT |= 0x0C; 
 }
 
 //-----------------------------------------------------------------------------
