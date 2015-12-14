@@ -85,7 +85,6 @@
 
 sbit LED = P3^3;                       // LED='1' means ON
 
-unsigned char cmd;
 
 //-----------------------------------------------------------------------------
 // Global Variables
@@ -111,8 +110,8 @@ void Init_Device (void);
 
 void SPI_LED_On (void);
 void SPI_LED_Off (void);
-void SPI_Byte_Write (void);
-void SPI_Byte_Read (void);
+void SPI_Byte_Write (unsigned char addr);
+void SPI_Byte_Read (unsigned char addr);
 void SPI_Array_Write (void);
 void SPI_Array_Read (void);
 
@@ -126,6 +125,8 @@ void main (void)
    unsigned char test_value = 0x55;
    unsigned char test_array[MAX_BUFFER_SIZE] = {1,2,3,4,5,6,7,8};
    unsigned char i;
+   unsigned char x1,x2,y1,y2,z1,z2;
+   int x,y,z;
 
    Init_Device ();                     // Initializes hardware peripherals
 
@@ -135,31 +136,84 @@ void main (void)
 
    // TEST BEGIN --------------------------------------------------------------
 
-   SPI_Data = test_value;
+   
 
    NSSMD0 = 1;
 
-   cmd = 0x00;
-   SPI_Byte_Read ();
+   SPI_Byte_Read (0x00);
 
-   while (!NSSMD0);                    // Wait until the Read transfer has
+                      // Wait until the Read transfer has
 
-cmd =  0; 
 
-while (1);
+   SPI_Data = 0x03; //met le bit 6 a 0 sur ladresse 31, indique au gyro qu'on fonctionne en 4wire
+   //& range de +/- 16g et resolution à 10bits
    // Write a value
-   SPI_Byte_Write ();
+   SPI_Byte_Write (0x31);
+                // Wait until the Write transfer has
+                                      // finished
 
-   while (!NSSMD0);                    // Wait until the Write transfer has
-                                       // finished
-
+	SPI_Data = 0x20;//Mode bypass & interruption used INT2
+   // Write a value
+   SPI_Byte_Write (0x38);
+                // Wait until the Write transfer has
+                                      // finished
+	SPI_Data = 0x0A;//bit d4=0 normal power
+   // Write a value
+   SPI_Byte_Write (0x2C);
+                // Wait until the Write transfer has
+                                      // finished
+		SPI_Data = 0x08;//measurement mode on
+   // Write a value
+   SPI_Byte_Write (0x2D);
    // Read the same value back
+
    SPI_Data = 0x00;
-   SPI_Byte_Read ();
-
-   while (!NSSMD0);                    // Wait until the Read transfer has
+   SPI_Byte_Read (0x32);
+                // Wait until the Read transfer has
                                        // finished
-
+	x1=SPI_Data;
+	// Read the same value back
+   SPI_Data = 0x00;
+   SPI_Byte_Read (0x33);
+                // Wait until the Read transfer has
+                                       // finished
+	x2=SPI_Data;
+// Read the same value back
+   SPI_Data = 0x00;
+   SPI_Byte_Read (0x34);
+                // Wait until the Read transfer has
+                                       // finished
+	y1=SPI_Data;
+// Read the same value back
+   SPI_Data = 0x00;
+   SPI_Byte_Read (0x35);
+                // Wait until the Read transfer has
+                                       // finished
+	y2=SPI_Data;
+	// Read the same value back
+   SPI_Data = 0x00;
+   SPI_Byte_Read (0x36);
+                // Wait until the Read transfer has
+                                       // finished
+	z1=SPI_Data;
+	// Read the same value back
+   SPI_Data = 0x00;
+   SPI_Byte_Read (0x37);
+   z2=SPI_Data;
+                // Wait until the Read transfer has
+                                       // finished
+                     // finished
+	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes (8-bits). To get the full value, two bytes must be combined for each axis.
+  //The X value is stored in values[0] and values[1].
+  x = ((int)x2<<8)|(int)x1;
+  //The Y value is stored in values[2] and values[3].
+  y = ((int)y2<<8)|(int)y1;
+  //The Z value is stored in values[4] and values[5].
+  z = ((int)z2<<8)|(int)z1;
+  x=(int)(x*31.2);
+  y=(int)(y*31.2);
+  z=(int)(z*31.2);
+	while (1);
    // Check if the sent value and returned value match
    if (SPI_Data != test_value)
    {
@@ -582,7 +636,7 @@ void SPI_LED_Off (void)
 // Length = 1 byte of command, 1 byte of data
 //
 //-----------------------------------------------------------------------------
-void SPI_Byte_Write (void)
+void SPI_Byte_Write (unsigned char addr)
 {
    while (!NSSMD0);                    // Wait until the SPI is free, in case
                                        // it's already busy
@@ -591,7 +645,9 @@ void SPI_Byte_Write (void)
 
    Command = SPI_WRITE;
 
-   SPI0DAT = Command;
+   SPI0DAT = addr;
+
+   while (!NSSMD0); 
 
    // The rest of this command will be handled by the SPI ISR, which will
    // trigger when SPIF is set from sending the Command
@@ -612,7 +668,7 @@ void SPI_Byte_Write (void)
 // Length = 1 byte of command, 1 byte of data
 //
 //-----------------------------------------------------------------------------
-void SPI_Byte_Read (void)
+void SPI_Byte_Read (unsigned char addr)
 {
    while (!NSSMD0);                    // Wait until the SPI is free, in case
                                        // it's already busy
@@ -621,7 +677,9 @@ void SPI_Byte_Read (void)
 
    Command = SPI_READ;
 
-   SPI0DAT = 0x80 | cmd;
+   SPI0DAT = 0x80 | addr;
+
+   while (!NSSMD0); 
 
    // The rest of this command will be handled by the SPI ISR, which will
    // trigger when SPIF is set from sending the Command

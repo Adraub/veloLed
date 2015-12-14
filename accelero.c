@@ -174,7 +174,7 @@ char b;
 		SPI_Read(0x00,buffer,1);
 		b = 9;
 		//SPI_write_cmd(0x31);          //envoie a l'adresse 31(base6) avec R/W=0 et multipleBytes=0
-       // SPI_Write(0x03);		  //met le bit 6 a 0 sur ladresse 31, indique au gyro qu'on fonctionne en 3wire
+       // SPI_Write(0x03);		  //met le bit 6 a 0 sur ladresse 31, indique au gyro qu'on fonctionne en 4wire
 		SPI_Read(0x2C,buffer,1);
 		b = 9;
 	//& range de +/- 16g et resolution à 10bits
