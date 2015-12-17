@@ -56,6 +56,7 @@
 
 #include <C8051F310.h>                 // SFR declarations
 #include "stdio.h"
+#include "math.h"
 
 //-----------------------------------------------------------------------------
 // Global Constants
@@ -63,28 +64,25 @@
 
 #define SYSCLK             24500000    // Internal oscillator frequency in Hz
 
-#define SPI_CLOCK          500000      // Maximum SPI clock
-                                       // The SPI clock is a maximum of 500 kHz
+#define SPI_CLOCK          5000000      // Maximum SPI clock
+                                       // The SPI clock is a maximum of 5MHz
                                        // when this example is used with
                                        // the SPI0_Slave code example.
 
 #define MAX_BUFFER_SIZE    6           // Maximum buffer Master will send
 
 // Instruction Set
-#define  SLAVE_LED_ON      0x01        // Turn the Slave LED on
-#define  SLAVE_LED_OFF     0x02        // Turn the Slave LED off
 #define  SPI_WRITE         0x04        // Send a byte from the Master to the
                                        // Slave
 #define  SPI_READ          0x08        // Send a byte from the Slave to the
                                        // Master
-#define  SPI_WRITE_BUFFER  0x10        // Send a series of bytes from the
-                                       // Master to the Slave
 #define  SPI_READ_BUFFER   0x32        // Send a series of bytes from the Slave
                                        // to the Master
 #define  ERROR_OCCURRED    0x40        // Indicator for the Slave to tell the
                                        // Master an error occurred
 
-#define  ACCELERO_RESOLUTION    31.2
+#define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
+#define  DATA_SAMPLE    		20     //Number of values used to evaluate rotation speed
 
 sbit LED = P3^3;                       // LED='1' means ON
 sbit SW2 = P0^7;                          // SW2='0' means switch pressed
@@ -130,20 +128,22 @@ void SPI_Array_Read (unsigned char addr);
 //-----------------------------------------------------------------------------
 void main (void)
 {
-   int accel[3]={0,0,0};
+   long accel[2]={0,0};
+   int speed[DATA_SAMPLE]={0};
+   long moyenne;
+   int iter=0;
+   unsigned long norme;
+   unsigned long count=0;
 
-   Init_Device ();                     // Initializes hardware peripherals
-	Timer2_Init (0xFFF0);                  // Init Timer2
-	UART0_Init();
-   EA = 1;                             // Enable global interrupts
 
-   LED = 0;
+  	Init_Device ();                     // Initializes hardware peripherals
+
+	LED = 0;
 
    // TEST BEGIN --------------------------------------------------------------
 
    
 
-   NSSMD0 = 1;
 
    SPI_Byte_Read (0x00);
 
@@ -156,6 +156,7 @@ void main (void)
    SPI_Byte_Write (0x31);
                 // Wait until the Write transfer has
                                       // finished
+	
 
 	SPI_Data = 0x20;//Mode bypass & interruption used INT2
    // Write a value
@@ -171,6 +172,10 @@ void main (void)
    // Write a value
    SPI_Byte_Write (0x2D);
 
+   SPI_Data = 0x07;//Z offset
+   // Write a value
+   SPI_Byte_Write (0x20);
+
 
    
 
@@ -181,18 +186,33 @@ void main (void)
    // Read the same value back
 
 	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes (8-bits). To get the full value, two bytes must be combined for each axis.
-  //The X value is stored in values[0] and values[1].
- 	 accel[0] = ((int)SPI_Data_Array[1]<<8)|(int)SPI_Data_Array[0];
   //The Y value is stored in values[2] and values[3].
- 	 accel[1] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
+ 	 accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
   //The Z value is stored in values[4] and values[5].
- 	 accel[2] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
+ 	 accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
  	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
  	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
- 	 accel[2]=(int)(accel[2]*ACCELERO_RESOLUTION);
-     printf("x= %d mg, ",accel[0]);
-	 printf("y= %d mg, ",accel[1]);
-	 printf("z= %d mg \n",accel[2]);
+	 norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
+	 speed[iter]=(int)accel[1];
+	 
+	 iter=iter+1;
+	 if(iter==DATA_SAMPLE)
+	 {
+   		for (count = 0; count < DATA_SAMPLE; count++)
+		{
+			moyenne+=(long)speed[count];
+		}
+		moyenne/=DATA_SAMPLE;
+		moyenne*=9.81;
+		moyenne/=0.046;
+		moyenne/=1000;
+		moyenne=sqrt(moyenne);
+		iter=0;
+		printf("y= %ld mg, ",accel[0]);
+		printf("z= %ld mg, ",accel[1]);
+	  	printf("norme= %lu mg \n",norme);
+		printf("moyZ= %ld mg\n",moyenne);
+	 }
 	 Delay();
    }
    
@@ -230,9 +250,8 @@ void PCA0_Init (void)
 //-----------------------------------------------------------------------------
 void Oscillator_Init (void)
 {
-   OSCICN = 0xc3;                     // Set the internal oscillator to
-                                       // 24.5 MHz
-	RSTSRC = 0x04;                         // enable missing clock detector
+	OSCICN = 0xC3;                     // Set the internal oscillator to 24.5 MHz
+	RSTSRC = 0x04;                     // Enable missing clock detector
 }
 
 //-----------------------------------------------------------------------------
@@ -306,6 +325,10 @@ void Init_Device (void)
    Oscillator_Init ();
    Port_Init ();
    SPI0_Init ();
+   Timer2_Init (0xFFF0);              // Init Timer2
+   UART0_Init();
+   EA = 1;            // Enable global interrupts
+   NSSMD0 = 1;  //Disable communication on SPI bus
 }
 
 //-----------------------------------------------------------------------------
@@ -373,12 +396,6 @@ void SPI_ISR (void) interrupt 6
       {
          switch (Command)
          {
-            case SLAVE_LED_ON:
-            case SLAVE_LED_OFF:
-               NSSMD0 = 1;             // Release the slave (not expecting
-                                       // data back)
-
-               break;
 
             case SPI_WRITE:
                SPI0DAT = SPI_Data;
@@ -491,13 +508,9 @@ void SPI_Byte_Write (unsigned char addr)
 {
    while (!NSSMD0);                    // Wait until the SPI is free, in case
                                        // it's already busy
-
    NSSMD0 = 0;
-
    Command = SPI_WRITE;
-
    SPI0DAT = addr;
-
    while (!NSSMD0); 
 
    // The rest of this command will be handled by the SPI ISR, which will
@@ -523,13 +536,9 @@ void SPI_Byte_Read (unsigned char addr)
 {
    while (!NSSMD0);                    // Wait until the SPI is free, in case
                                        // it's already busy
-
    NSSMD0 = 0;
-
    Command = SPI_READ;
-
-   SPI0DAT = 0x80 | addr;
-
+   SPI0DAT = 0x80 | addr;  //Set Read byte and no multiple bytes
    while (!NSSMD0); 
 
    // The rest of this command will be handled by the SPI ISR, which will
@@ -557,13 +566,9 @@ void SPI_Array_Read (unsigned char addr)
 {
    while (!NSSMD0);                    // Wait until the SPI is free, in case
                                        // it's already busy
-
    NSSMD0 = 0;
-
    Command = SPI_READ_BUFFER;
-
-   SPI0DAT = 0xC0 | addr;
-
+   SPI0DAT = 0xC0 | addr; //Set Read byte and  multiple bytes
    while (!NSSMD0); 
 
    // The rest of this command will be handled by the SPI ISR, which will
@@ -580,9 +585,8 @@ void SPI_Array_Read (unsigned char addr)
 void Timer2_Init (int n)
 {
                                           // use SYSCLK/12 as timebase
-   CKCON  &= ~0x10;                       // Timer2 clocked based on T2XCLK;
-
-   TMR2CN  = 0x04;                        // Stop Timer2; Clear TF2; Voir datasheet p199
+   CKCON  &= ~0x10;                       // Timer2 clocked based on T2XCLK
+   TMR2CN  = 0x04;                        // Stop Timer2 Clear TF2
    TMR2RL  = -n;                          // Init reload values
 
    ET2 = 1;
@@ -600,13 +604,9 @@ void UART0_Init()
 {
    //Timer 1 init
    TH1     = 0x96;                        // débordement à 57600Hz
-	
    TMOD   |= 0x20;                        // mode2 autoreload
    CKCON  &= 0xF4;                        // sysclk pour timer1
    TR1     = 1;                           // timer1 run
-
-
-   //UART Init
    REN0    = 1;                           // reception autorisée
    SBUF0   = '\n';                        // pour commencer nouvelle  
 }
@@ -646,6 +646,6 @@ void Delay (void)
 {
    unsigned long count;
 
-   for (count = 200000; count > 0; count--);
+   for (count = 20000; count > 0; count--);
 }
 
