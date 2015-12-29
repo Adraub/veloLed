@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22              12/17/2015  22:43:13  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22              12/29/2015  23:27:48  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
@@ -14,13 +14,13 @@ INPUT MODULES INCLUDED:
   C:\Users\Adraub\Documents\GitHub\veloLed\F31x_SPI0_Master.obj (F31X_SPI0_MAS
 >> TER)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPMUL)
-  C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPDIV)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FCAST)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?CASTF)
   C:\KEIL\C51\LIB\C51FPS.LIB (PRINTF)
   C:\KEIL\C51\LIB\C51FPS.LIB (SQRT)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPGETOPN)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPADD)
+  C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPDIV)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPROUND)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPCONVERT)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FTNPWR)
@@ -36,6 +36,7 @@ INPUT MODULES INCLUDED:
   C:\KEIL\C51\LIB\C51S.LIB (?C?PLDIIDATA)
   C:\KEIL\C51\LIB\C51S.LIB (?C?CCASE)
   C:\KEIL\C51\LIB\C51S.LIB (PUTCHAR)
+  C:\KEIL\C51\LIB\C51S.LIB (ABS)
   C:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
   C:\KEIL\C51\LIB\C51S.LIB (?C?ULDIV)
 
@@ -66,43 +67,46 @@ LINK MAP OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31X_SP
                     0036H     07CAH                  *** GAP ***
             CODE    0800H     07BFH     UNIT         ?C?LIB_CODE
             CODE    0FBFH     046FH     UNIT         ?PR?PRINTF?PRINTF
-            CODE    142EH     026FH     UNIT         ?PR?MAIN?F31X_SPI0_MASTER
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 2
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 2
 
 
+            CODE    142EH     01FFH     UNIT         ?PR?MAIN?F31X_SPI0_MASTER
 >> 
-            CODE    169DH     00AAH     UNIT         ?PR?SQRT?SQRT
-            CODE    1747H     008FH     UNIT         ?PR?SPI_ISR?F31X_SPI0_MAS
+            CODE    162DH     00AAH     UNIT         ?PR?SQRT?SQRT
+            CODE    16D7H     008FH     UNIT         ?PR?SPI_ISR?F31X_SPI0_MAS
 >> TER
-            CODE    17D6H     008CH     UNIT         ?C_C51STARTUP
-            CODE    1862H     0069H     UNIT         ?CO?F31X_SPI0_MASTER
-            CODE    18CBH     0044H     UNIT         ?C?LDIV
-            CODE    190FH     0039H     UNIT         ?PR?DELAY?F31X_SPI0_MASTE
+            CODE    1766H     008CH     UNIT         ?C_C51STARTUP
+            CODE    17F2H     0069H     UNIT         ?CO?F31X_SPI0_MASTER
+            CODE    185BH     0044H     UNIT         ?C?LDIV
+            CODE    189FH     0039H     UNIT         ?PR?DELAY?F31X_SPI0_MASTE
 >> R
-            CODE    1948H     0027H     UNIT         ?PR?PUTCHAR?PUTCHAR
-            CODE    196FH     001BH     UNIT         ?PR?INIT_DEVICE?F31X_SPI0
+            CODE    18D8H     002DH     UNIT         ?PR?ACCELEROMETER_INIT?F3
+>> 1X_SPI0_MASTER
+            CODE    1905H     0027H     UNIT         ?PR?PUTCHAR?PUTCHAR
+            CODE    192CH     001DH     UNIT         ?PR?INIT_DEVICE?F31X_SPI0
 >> _MASTER
-            CODE    198AH     0017H     UNIT         ?C_INITSEG
-            CODE    19A1H     0013H     UNIT         ?PR?PORT_INIT?F31X_SPI0_M
+            CODE    1949H     0017H     UNIT         ?C_INITSEG
+            CODE    1960H     0016H     UNIT         ?PR?PORT_INIT?F31X_SPI0_M
 >> ASTER
-            CODE    19B4H     0013H     UNIT         ?PR?_TIMER2_INIT?F31X_SPI
+            CODE    1976H     0013H     UNIT         ?PR?_TIMER2_INIT?F31X_SPI
 >> 0_MASTER
-            CODE    19C7H     0012H     UNIT         ?PR?TIMER2_ISR?F31X_SPI0_
+            CODE    1989H     0012H     UNIT         ?PR?TIMER2_ISR?F31X_SPI0_
 >> MASTER
-            CODE    19D9H     0011H     UNIT         ?PR?_SPI_BYTE_READ?F31X_S
+            CODE    199BH     0011H     UNIT         ?PR?_SPI_BYTE_READ?F31X_S
 >> PI0_MASTER
-            CODE    19EAH     0011H     UNIT         ?PR?_SPI_ARRAY_READ?F31X_
+            CODE    19ACH     0011H     UNIT         ?PR?_SPI_ARRAY_READ?F31X_
 >> SPI0_MASTER
-            CODE    19FBH     0011H     UNIT         ?PR?UART0_INIT?F31X_SPI0_
+            CODE    19BDH     0011H     UNIT         ?PR?UART0_INIT?F31X_SPI0_
 >> MASTER
-            CODE    1A0CH     000EH     UNIT         ?PR?_SPI_BYTE_WRITE?F31X_
+            CODE    19CEH     000EH     UNIT         ?PR?_SPI_BYTE_WRITE?F31X_
 >> SPI0_MASTER
-            CODE    1A1AH     000CH     UNIT         ?PR?SPI0_INIT?F31X_SPI0_M
+            CODE    19DCH     000CH     UNIT         ?PR?SPI0_INIT?F31X_SPI0_M
 >> ASTER
-            CODE    1A26H     0007H     UNIT         ?PR?OSCILLATOR_INIT?F31X_
+            CODE    19E8H     000CH     UNIT         ?PR?_ABS?ABS
+            CODE    19F4H     0007H     UNIT         ?PR?OSCILLATOR_INIT?F31X_
 >> SPI0_MASTER
-            CODE    1A2DH     0004H     UNIT         ?PR?PCA0_INIT?F31X_SPI0_M
->> ASTER
+            CODE    19FBH     0001H     UNIT         ?PR?SAMPLEACCELERATION?F3
+>> 1X_SPI0_MASTER
 
 
 
@@ -110,49 +114,53 @@ OVERLAY MAP OF MODULE:   C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
 >> X_SPI0_MASTER)
 
 
-SEGMENT                                         BIT_GROUP          DATA_GROUP 
->> 
-  +--> CALLED SEGMENT                        START    LENGTH     START    LENG
->> TH
+SEGMENT                                            BIT_GROUP          DATA_GRO
+>> UP 
+  +--> CALLED SEGMENT                           START    LENGTH     START    L
+>> ENGTH
 ------------------------------------------------------------------------------
->> --
-?C_C51STARTUP                                -----    -----      -----    ----
->> -
+>> -----
+?C_C51STARTUP                                   -----    -----      -----    -
+>> ----
   +--> ?PR?MAIN?F31X_SPI0_MASTER
   +--> ?C_INITSEG
 
-?PR?MAIN?F31X_SPI0_MASTER                    -----    -----      0022H    003E
->> H
+?PR?MAIN?F31X_SPI0_MASTER                       -----    -----      0022H    0
+>> 03EH
   +--> ?CO?F31X_SPI0_MASTER
   +--> ?PR?INIT_DEVICE?F31X_SPI0_MASTER
-  +--> ?PR?_SPI_BYTE_READ?F31X_SPI0_MASTER
-  +--> ?PR?_SPI_BYTE_WRITE?F31X_SPI0_MASTER
   +--> ?PR?_SPI_ARRAY_READ?F31X_SPI0_MASTER
+  +--> ?PR?_ABS?ABS
   +--> ?PR?SQRT?SQRT
   +--> ?PR?PRINTF?PRINTF
   +--> ?PR?DELAY?F31X_SPI0_MASTER
 
-?PR?INIT_DEVICE?F31X_SPI0_MASTER             -----    -----      -----    ----
->> -
-  +--> ?PR?PCA0_INIT?F31X_SPI0_MASTER
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 3
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 3
 
 
+?PR?INIT_DEVICE?F31X_SPI0_MASTER                -----    -----      -----    -
+>> ----
   +--> ?PR?OSCILLATOR_INIT?F31X_SPI0_MASTER
   +--> ?PR?PORT_INIT?F31X_SPI0_MASTER
   +--> ?PR?SPI0_INIT?F31X_SPI0_MASTER
   +--> ?PR?_TIMER2_INIT?F31X_SPI0_MASTER
   +--> ?PR?UART0_INIT?F31X_SPI0_MASTER
+  +--> ?PR?ACCELEROMETER_INIT?F31X_SPI0_MASTER
 
-?PR?SQRT?SQRT                                -----    -----      0060H    0004
->> H
+?PR?ACCELEROMETER_INIT?F31X_SPI0_MASTER         -----    -----      -----    -
+>> ----
+  +--> ?PR?_SPI_BYTE_READ?F31X_SPI0_MASTER
+  +--> ?PR?_SPI_BYTE_WRITE?F31X_SPI0_MASTER
 
-?PR?PRINTF?PRINTF                            0020H.0  0001H.1    0060H    001C
->> H
+?PR?SQRT?SQRT                                   -----    -----      0060H    0
+>> 004H
+
+?PR?PRINTF?PRINTF                               0020H.0  0001H.1    0060H    0
+>> 01CH
   +--> ?PR?PUTCHAR?PUTCHAR
 
-?PR?DELAY?F31X_SPI0_MASTER                   -----    -----      0060H    0004
->> H
+?PR?DELAY?F31X_SPI0_MASTER                      -----    -----      0060H    0
+>> 004H
 
 
 
@@ -166,28 +174,38 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   C:0000H         SYMBOL        _ICE_DUMMY_
   D:00A2H         PUBLIC        SPI0CKR
   D:0080H         PUBLIC        P0
+  D:00A0H         PUBLIC        P2
   D:00B0H         PUBLIC        P3
-  C:19C7H         PUBLIC        Timer2_ISR
+  C:1989H         PUBLIC        Timer2_ISR
+  B:00A0H.0       PUBLIC        LED0
   B:00A8H.7       PUBLIC        EA
+  B:00A0H.1       PUBLIC        LED1
+  B:00A0H.2       PUBLIC        LED2
+  B:00A0H.3       PUBLIC        LED3
   D:00E8H         PUBLIC        ADC0CN
   D:00A4H         PUBLIC        P0MDOUT
   D:00A5H         PUBLIC        P1MDOUT
   D:00A8H         PUBLIC        IE
+  D:00A6H         PUBLIC        P2MDOUT
   D:00A7H         PUBLIC        P3MDOUT
-  C:1A1AH         PUBLIC        SPI0_Init
+  C:19DCH         PUBLIC        SPI0_Init
   B:00C8H.7       PUBLIC        TF2H
   B:0098H.4       PUBLIC        REN0
   D:00D9H         PUBLIC        PCA0MD
   D:00D8H         PUBLIC        PCA0CN
   D:00B8H         PUBLIC        IP
-  C:1A26H         PUBLIC        Oscillator_Init
+  C:19F4H         PUBLIC        Oscillator_Init
   D:00E1H         PUBLIC        XBR0
   D:00E2H         PUBLIC        XBR1
   D:00C0H         PUBLIC        SMB0CN
   C:142EH         PUBLIC        main
+  B:00A0H.6       PUBLIC        BLUE
   D:000AH         PUBLIC        SPI_Data_Array
-  C:19B4H         PUBLIC        _Timer2_Init
-  C:19EAH         PUBLIC        _SPI_Array_Read
+  C:1976H         PUBLIC        _Timer2_Init
+  C:19ACH         PUBLIC        _SPI_Array_Read
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 4
+
+
   D:00F8H         PUBLIC        SPI0CN
   B:00F8H.7       PUBLIC        SPIF
   D:0089H         PUBLIC        TMOD
@@ -196,37 +214,37 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   B:00F8H.2       PUBLIC        NSSMD0
   D:00C8H         PUBLIC        TMR2CN
   D:00D4H         PUBLIC        P0SKIP
-  C:1747H         PUBLIC        SPI_ISR
-  C:19A1H         PUBLIC        PORT_Init
+  C:18D8H         PUBLIC        Accelerometer_Init
+  C:16D7H         PUBLIC        SPI_ISR
+  C:1960H         PUBLIC        PORT_Init
   D:00B2H         PUBLIC        OSCICN
-  C:19D9H         PUBLIC        _SPI_Byte_Read
-  C:189BH         SYMBOL        _?ix1000
+  C:199BH         PUBLIC        _SPI_Byte_Read
+  C:182BH         SYMBOL        _?ix1000
   D:0010H         PUBLIC        Command
-  C:18A3H         SYMBOL        _?ix1001
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 4
-
-
+  C:1833H         SYMBOL        _?ix1001
   D:00CAH         PUBLIC        TMR2RL
   D:0011H         PUBLIC        SPI_Data
-  C:196FH         PUBLIC        Init_Device
+  C:192CH         PUBLIC        Init_Device
   B:00A8H.5       PUBLIC        ET2
   D:008DH         PUBLIC        TH1
-  C:1A0CH         PUBLIC        _SPI_Byte_Write
+  C:19CEH         PUBLIC        _SPI_Byte_Write
   B:00B0H.3       PUBLIC        LED
   B:0088H.6       PUBLIC        TR1
+  C:19FBH         PUBLIC        sampleAcceleration
+  B:00A0H.4       PUBLIC        RED
   B:0080H.7       PUBLIC        SW2
   D:0099H         PUBLIC        SBUF0
   B:00A8H.6       PUBLIC        ESPI0
   D:00EFH         PUBLIC        RSTSRC
-  C:19FBH         PUBLIC        UART0_Init
+  C:19BDH         PUBLIC        UART0_Init
   D:0098H         PUBLIC        SCON0
   B:0021H.1       PUBLIC        Error_Flag
   D:00A1H         PUBLIC        SPI0CFG
   D:008EH         PUBLIC        CKCON
-  C:190FH         PUBLIC        Delay
+  C:189FH         PUBLIC        Delay
+  B:00A0H.5       PUBLIC        GREEN
   D:00A3H         PUBLIC        SPI0DAT
   D:00D0H         PUBLIC        PSW
-  C:1A2DH         PUBLIC        PCA0_Init
   -------         PROC          MAIN
   -------         DO            
   D:0022H         SYMBOL        accel
@@ -236,276 +254,278 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   D:0058H         SYMBOL        norme
   D:005CH         SYMBOL        count
   -------         ENDDO         
-  C:142EH         LINE#         129
-  C:142EH         LINE#         130
-  C:142EH         LINE#         131
-  C:1441H         LINE#         132
-  C:1454H         LINE#         134
-  C:1459H         LINE#         136
-  C:1461H         LINE#         139
-  C:1464H         LINE#         141
-  C:1466H         LINE#         148
-  C:146BH         LINE#         153
-  C:146EH         LINE#         156
-  C:1473H         LINE#         161
-  C:1476H         LINE#         163
-  C:147BH         LINE#         166
-  C:147EH         LINE#         168
-  C:1483H         LINE#         171
-  C:1486H         LINE#         173
-  C:148BH         LINE#         175
-  C:148EH         LINE#         177
-  C:1493H         LINE#         182
-  C:1493H         LINE#         184
-  C:1498H         LINE#         190
-  C:14AAH         LINE#         192
-  C:14BCH         LINE#         193
-  C:14E2H         LINE#         194
-  C:1508H         LINE#         195
-  C:1555H         LINE#         196
-  C:1563H         LINE#         198
-  C:156BH         LINE#         199
-  C:1574H         LINE#         200
-  C:1574H         LINE#         201
-  C:1590H         LINE#         202
-  C:1590H         LINE#         203
-  C:15B6H         LINE#         204
-  C:15CDH         LINE#         205
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 5
+  C:142EH         LINE#         84
+  C:142EH         LINE#         85
+  C:142EH         LINE#         86
+  C:1441H         LINE#         87
+  C:1454H         LINE#         89
+  C:1459H         LINE#         91
+  C:1461H         LINE#         94
+  C:1464H         LINE#         96
+  C:1466H         LINE#         98
+  C:1468H         LINE#         99
+  C:146AH         LINE#         100
+  C:146CH         LINE#         101
+  C:146EH         LINE#         102
+  C:1470H         LINE#         103
+  C:1472H         LINE#         104
+  C:1474H         LINE#         114
+  C:1474H         LINE#         116
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 5
 
 
-  C:15E6H         LINE#         206
-  C:1600H         LINE#         207
-  C:161AH         LINE#         208
-  C:162CH         LINE#         209
-  C:163EH         LINE#         210
-  C:1643H         LINE#         211
-  C:1658H         LINE#         212
-  C:166DH         LINE#         213
-  C:1682H         LINE#         214
-  C:1697H         LINE#         215
-  C:1697H         LINE#         216
-  C:169AH         LINE#         217
+  C:1479H         LINE#         122
+  C:148BH         LINE#         124
+  C:149DH         LINE#         126
+  C:14C3H         LINE#         127
+  C:14E9H         LINE#         129
+  C:14F5H         LINE#         131
+  C:14FDH         LINE#         132
+  C:1506H         LINE#         133
+  C:1506H         LINE#         134
+  C:1522H         LINE#         135
+  C:1522H         LINE#         136
+  C:154BH         LINE#         137
+  C:1562H         LINE#         138
+  C:157BH         LINE#         140
+  C:15CEH         LINE#         141
+  C:15D3H         LINE#         143
+  C:15E8H         LINE#         144
+  C:15FDH         LINE#         145
+  C:1612H         LINE#         146
+  C:1627H         LINE#         147
+  C:1627H         LINE#         148
+  C:162AH         LINE#         149
   -------         ENDPROC       MAIN
-  -------         PROC          PCA0_INIT
-  C:1A2DH         LINE#         235
-  C:1A2DH         LINE#         236
-  C:1A2DH         LINE#         237
-  C:1A30H         LINE#         238
-  -------         ENDPROC       PCA0_INIT
   -------         PROC          OSCILLATOR_INIT
-  C:1A26H         LINE#         251
-  C:1A26H         LINE#         252
-  C:1A26H         LINE#         253
-  C:1A29H         LINE#         254
-  C:1A2CH         LINE#         255
+  C:19F4H         LINE#         154
+  C:19F4H         LINE#         155
+  C:19F4H         LINE#         156
+  C:19F7H         LINE#         157
+  C:19FAH         LINE#         158
   -------         ENDPROC       OSCILLATOR_INIT
   -------         PROC          PORT_INIT
-  C:19A1H         LINE#         274
-  C:19A1H         LINE#         275
-  C:19A1H         LINE#         276
-  C:19A4H         LINE#         277
-  C:19A7H         LINE#         278
-  C:19AAH         LINE#         282
-  C:19ADH         LINE#         283
-  C:19B0H         LINE#         284
-  C:19B3H         LINE#         285
+  C:1960H         LINE#         161
+  C:1960H         LINE#         162
+  C:1960H         LINE#         164
+  C:1963H         LINE#         167
+  C:1966H         LINE#         170
+  C:1969H         LINE#         173
+  C:196CH         LINE#         176
+  C:196FH         LINE#         177
+  C:1972H         LINE#         180
+  C:1975H         LINE#         181
   -------         ENDPROC       PORT_INIT
   -------         PROC          SPI0_INIT
-  C:1A1AH         LINE#         299
-  C:1A1AH         LINE#         300
-  C:1A1AH         LINE#         301
-  C:1A1DH         LINE#         303
-  C:1A20H         LINE#         306
-  C:1A23H         LINE#         308
-  C:1A25H         LINE#         310
+  C:19DCH         LINE#         184
+  C:19DCH         LINE#         185
+  C:19DCH         LINE#         186
+  C:19DFH         LINE#         187
+  C:19E2H         LINE#         188
+  C:19E5H         LINE#         189
+  C:19E7H         LINE#         191
   -------         ENDPROC       SPI0_INIT
+  -------         PROC          ACCELEROMETER_INIT
+  C:18D8H         LINE#         195
+  C:18D8H         LINE#         197
+  C:18DDH         LINE#         202
+  C:18E0H         LINE#         204
+  C:18E5H         LINE#         207
+  C:18E8H         LINE#         209
+  C:18EDH         LINE#         212
+  C:18F0H         LINE#         214
+  C:18F5H         LINE#         217
+  C:18F8H         LINE#         219
+  C:18FDH         LINE#         222
+  C:1900H         LINE#         224
+  -------         ENDPROC       ACCELEROMETER_INIT
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 6
+
+
   -------         PROC          INIT_DEVICE
-  C:196FH         LINE#         322
-  C:196FH         LINE#         323
-  C:196FH         LINE#         324
-  C:1972H         LINE#         325
-  C:1975H         LINE#         326
-  C:1978H         LINE#         327
-  C:197BH         LINE#         328
-  C:1982H         LINE#         329
-  C:1985H         LINE#         330
-  C:1987H         LINE#         331
-  C:1989H         LINE#         332
+  C:192CH         LINE#         229
+  C:192CH         LINE#         230
+  C:192CH         LINE#         231
+  C:192FH         LINE#         232
+  C:1932H         LINE#         233
+  C:1935H         LINE#         234
+  C:1938H         LINE#         235
+  C:193FH         LINE#         236
+  C:1942H         LINE#         237
+  C:1944H         LINE#         238
+  C:1946H         LINE#         239
   -------         ENDPROC       INIT_DEVICE
   -------         PROC          SPI_ISR
   -------         DO            
   D:0008H         SYMBOL        array_index
   D:0009H         SYMBOL        state
   -------         ENDDO         
-  C:1747H         LINE#         362
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 6
+  C:16D7H         LINE#         243
+  C:16E0H         LINE#         248
+  C:16E3H         LINE#         249
+  C:16E3H         LINE#         251
+  C:16E5H         LINE#         253
+  C:16E7H         LINE#         254
+  C:16E9H         LINE#         256
+  C:16E9H         LINE#         257
+  C:16EEH         LINE#         258
+  C:16EEH         LINE#         262
+  C:16F0H         LINE#         263
+  C:16F0H         LINE#         276
+  C:16F4H         LINE#         277
+  C:16F4H         LINE#         278
+  C:1702H         LINE#         279
+  C:1702H         LINE#         281
+  C:1702H         LINE#         282
+  C:1705H         LINE#         284
+  C:1705H         LINE#         287
+  C:1707H         LINE#         289
+  C:1707H         LINE#         290
+  C:170AH         LINE#         293
+  C:170AH         LINE#         296
+  C:170CH         LINE#         298
+  C:170CH         LINE#         299
+  C:170FH         LINE#         302
+  C:1712H         LINE#         311
+  C:1714H         LINE#         313
+  C:1714H         LINE#         314
+  C:1714H         LINE#         317
+  C:1714H         LINE#         318
+  C:1716H         LINE#         319
+  C:171BH         LINE#         320
+  C:171BH         LINE#         322
+  C:1721H         LINE#         323
+  C:1721H         LINE#         324
+  C:1721H         LINE#         325
+  C:1728H         LINE#         326
+  C:172BH         LINE#         328
+  C:172DH         LINE#         330
+  C:1733H         LINE#         331
+  C:1733H         LINE#         332
+  C:1733H         LINE#         333
+  C:1733H         LINE#         335
+  C:1735H         LINE#         336
+  C:1735H         LINE#         337
+  C:1738H         LINE#         340
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 7
 
 
-  C:1750H         LINE#         367
-  C:1753H         LINE#         368
-  C:1753H         LINE#         370
-  C:1755H         LINE#         372
-  C:1757H         LINE#         373
-  C:1759H         LINE#         375
-  C:1759H         LINE#         376
-  C:175EH         LINE#         377
-  C:175EH         LINE#         381
-  C:1760H         LINE#         382
-  C:1760H         LINE#         395
-  C:1764H         LINE#         396
-  C:1764H         LINE#         397
-  C:1772H         LINE#         398
-  C:1772H         LINE#         400
-  C:1772H         LINE#         401
-  C:1775H         LINE#         403
-  C:1775H         LINE#         406
-  C:1777H         LINE#         408
-  C:1777H         LINE#         409
-  C:177AH         LINE#         412
-  C:177AH         LINE#         415
-  C:177CH         LINE#         417
-  C:177CH         LINE#         418
-  C:177FH         LINE#         421
-  C:1782H         LINE#         430
-  C:1784H         LINE#         432
-  C:1784H         LINE#         433
-  C:1784H         LINE#         436
-  C:1784H         LINE#         437
-  C:1786H         LINE#         438
-  C:178BH         LINE#         439
-  C:178BH         LINE#         441
-  C:1791H         LINE#         442
-  C:1791H         LINE#         443
-  C:1791H         LINE#         444
-  C:1798H         LINE#         445
-  C:179BH         LINE#         447
-  C:179DH         LINE#         449
-  C:17A3H         LINE#         450
-  C:17A3H         LINE#         451
-  C:17A3H         LINE#         452
-  C:17A3H         LINE#         454
-  C:17A5H         LINE#         455
-  C:17A5H         LINE#         456
-  C:17A8H         LINE#         459
-  C:17A8H         LINE#         460
-  C:17AAH         LINE#         461
-  C:17AFH         LINE#         462
-  C:17AFH         LINE#         463
-  C:17B9H         LINE#         464
-  C:17B9H         LINE#         465
-  C:17B9H         LINE#         466
-  C:17BCH         LINE#         468
-  C:17BEH         LINE#         470
-  C:17BEH         LINE#         471
-  C:17C5H         LINE#         474
-  C:17C8H         LINE#         476
-  C:17C8H         LINE#         477
-  C:17C8H         LINE#         479
-  C:17CAH         LINE#         481
-  C:17CDH         LINE#         482
-  C:17CDH         LINE#         484
-  C:17CFH         LINE#         485
-  C:17CFH         LINE#         486
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 7
-
-
+  C:1738H         LINE#         341
+  C:173AH         LINE#         342
+  C:173FH         LINE#         343
+  C:173FH         LINE#         344
+  C:1749H         LINE#         345
+  C:1749H         LINE#         346
+  C:1749H         LINE#         347
+  C:174CH         LINE#         349
+  C:174EH         LINE#         351
+  C:174EH         LINE#         352
+  C:1755H         LINE#         355
+  C:1758H         LINE#         357
+  C:1758H         LINE#         358
+  C:1758H         LINE#         360
+  C:175AH         LINE#         362
+  C:175DH         LINE#         363
+  C:175DH         LINE#         365
+  C:175FH         LINE#         366
+  C:175FH         LINE#         367
   -------         ENDPROC       SPI_ISR
   -------         PROC          _SPI_BYTE_WRITE
   D:0007H         SYMBOL        addr
-  C:1A0CH         LINE#         507
-  C:1A0CH         LINE#         508
-  C:1A0CH         LINE#         509
-  C:1A0FH         LINE#         511
-  C:1A11H         LINE#         512
-  C:1A14H         LINE#         513
-  C:1A16H         LINE#         514
-  C:1A19H         LINE#         518
+  C:19CEH         LINE#         371
+  C:19CEH         LINE#         372
+  C:19CEH         LINE#         373
+  C:19D1H         LINE#         374
+  C:19D3H         LINE#         375
+  C:19D6H         LINE#         376
+  C:19D8H         LINE#         377
+  C:19DBH         LINE#         381
   -------         ENDPROC       _SPI_BYTE_WRITE
   -------         PROC          _SPI_BYTE_READ
   D:0007H         SYMBOL        addr
-  C:19D9H         LINE#         535
-  C:19D9H         LINE#         536
-  C:19D9H         LINE#         537
-  C:19DCH         LINE#         539
-  C:19DEH         LINE#         540
-  C:19E1H         LINE#         541
-  C:19E6H         LINE#         542
-  C:19E9H         LINE#         546
+  C:199BH         LINE#         384
+  C:199BH         LINE#         385
+  C:199BH         LINE#         386
+  C:199EH         LINE#         388
+  C:19A0H         LINE#         389
+  C:19A3H         LINE#         390
+  C:19A8H         LINE#         391
+  C:19ABH         LINE#         395
   -------         ENDPROC       _SPI_BYTE_READ
   -------         PROC          _SPI_ARRAY_READ
   D:0007H         SYMBOL        addr
-  C:19EAH         LINE#         565
-  C:19EAH         LINE#         566
-  C:19EAH         LINE#         567
-  C:19EDH         LINE#         569
-  C:19EFH         LINE#         570
-  C:19F2H         LINE#         571
-  C:19F7H         LINE#         572
-  C:19FAH         LINE#         576
+  C:19ACH         LINE#         399
+  C:19ACH         LINE#         400
+  C:19ACH         LINE#         401
+  C:19AFH         LINE#         403
+  C:19B1H         LINE#         404
+  C:19B4H         LINE#         405
+  C:19B9H         LINE#         406
+  C:19BCH         LINE#         410
   -------         ENDPROC       _SPI_ARRAY_READ
   -------         PROC          _TIMER2_INIT
   D:0006H         SYMBOL        n
-  C:19B4H         LINE#         585
-  C:19B4H         LINE#         586
-  C:19B4H         LINE#         588
-  C:19B7H         LINE#         589
-  C:19BAH         LINE#         590
-  C:19C4H         LINE#         592
-  C:19C6H         LINE#         594
+  C:1976H         LINE#         413
+  C:1976H         LINE#         414
+  C:1976H         LINE#         416
+  C:1979H         LINE#         417
+  C:197CH         LINE#         418
+  C:1986H         LINE#         419
+  C:1988H         LINE#         421
   -------         ENDPROC       _TIMER2_INIT
   -------         PROC          UART0_INIT
-  C:19FBH         LINE#         603
-  C:19FBH         LINE#         604
-  C:19FBH         LINE#         606
-  C:19FEH         LINE#         607
-  C:1A01H         LINE#         608
-  C:1A04H         LINE#         609
-  C:1A06H         LINE#         610
-  C:1A08H         LINE#         611
-  C:1A0BH         LINE#         612
+  C:19BDH         LINE#         430
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 8
+
+
+  C:19BDH         LINE#         431
+  C:19BDH         LINE#         433
+  C:19C0H         LINE#         434
+  C:19C3H         LINE#         435
+  C:19C6H         LINE#         436
+  C:19C8H         LINE#         437
+  C:19CAH         LINE#         438
+  C:19CDH         LINE#         439
   -------         ENDPROC       UART0_INIT
   -------         PROC          TIMER2_ISR
-  C:19C7H         LINE#         623
-  C:19C9H         LINE#         625
-  C:19CEH         LINE#         626
-  C:19D0H         LINE#         627
-  C:19D2H         LINE#         628
-  C:19D2H         LINE#         629
-  C:19D4H         LINE#         630
-  C:19D4H         LINE#         632
-  C:19D6H         LINE#         633
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 8
-
-
+  C:1989H         LINE#         450
+  C:198BH         LINE#         452
+  C:1990H         LINE#         453
+  C:1992H         LINE#         454
+  C:1994H         LINE#         455
+  C:1994H         LINE#         456
+  C:1996H         LINE#         457
+  C:1996H         LINE#         459
+  C:1998H         LINE#         460
   -------         ENDPROC       TIMER2_ISR
   -------         PROC          DELAY
   -------         DO            
   D:0060H         SYMBOL        count
   -------         ENDDO         
-  C:190FH         LINE#         645
-  C:190FH         LINE#         646
-  C:190FH         LINE#         649
-  C:1947H         LINE#         650
+  C:189FH         LINE#         472
+  C:189FH         LINE#         473
+  C:189FH         LINE#         476
+  C:18D7H         LINE#         477
   -------         ENDPROC       DELAY
+  -------         PROC          SAMPLEACCELERATION
+  C:19FBH         LINE#         479
+  C:19FBH         LINE#         480
+  C:19FBH         LINE#         482
+  -------         ENDPROC       SAMPLEACCELERATION
   -------         ENDMOD        F31X_SPI0_MASTER
 
   -------         MODULE        ?C?FPMUL
   C:0800H         PUBLIC        ?C?FPMUL
   -------         ENDMOD        ?C?FPMUL
 
-  -------         MODULE        ?C?FPDIV
-  C:0909H         PUBLIC        ?C?FPDIV
-  -------         ENDMOD        ?C?FPDIV
-
   -------         MODULE        ?C?FCAST
-  C:09B0H         PUBLIC        ?C?FCASTC
-  C:09ABH         PUBLIC        ?C?FCASTI
-  C:09A6H         PUBLIC        ?C?FCASTL
+  C:0910H         PUBLIC        ?C?FCASTC
+  C:090BH         PUBLIC        ?C?FCASTI
+  C:0906H         PUBLIC        ?C?FCASTL
   -------         ENDMOD        ?C?FCAST
 
   -------         MODULE        ?C?CASTF
-  C:09E4H         PUBLIC        ?C?CASTF
+  C:0944H         PUBLIC        ?C?CASTF
   -------         ENDMOD        ?C?CASTF
 
   -------         MODULE        PRINTF
@@ -516,13 +536,20 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         ENDMOD        PRINTF
 
   -------         MODULE        SQRT
-  C:16A1H         PUBLIC        _SQRT
+  C:1631H         PUBLIC        _SQRT
   -------         ENDMOD        SQRT
 
   -------         MODULE        ?C?FPADD
-  C:0A6CH         PUBLIC        ?C?FPADD
-  C:0A68H         PUBLIC        ?C?FPSUB
+  C:09CCH         PUBLIC        ?C?FPADD
+  C:09C8H         PUBLIC        ?C?FPSUB
   -------         ENDMOD        ?C?FPADD
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 9
+
+
+
+  -------         MODULE        ?C?FPDIV
+  C:0AC0H         PUBLIC        ?C?FPDIV
+  -------         ENDMOD        ?C?FPDIV
 
   -------         MODULE        ?C?FPROUND
   C:0B5DH         PUBLIC        ?C?FPROUND
@@ -543,9 +570,6 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         MODULE        ?C?CLDPTR
   C:0DF5H         PUBLIC        ?C?CLDPTR
   -------         ENDMOD        ?C?CLDPTR
-BL51 BANKED LINKER/LOCATER V6.22            12/17/2015  22:43:13  PAGE 9
-
-
 
   -------         MODULE        ?C?CLDOPTR
   C:0E0EH         PUBLIC        ?C?CLDOPTR
@@ -560,7 +584,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         ENDMOD        ?C?LMUL
 
   -------         MODULE        ?C?SLDIV
-  C:18CBH         PUBLIC        ?C?SLDIV
+  C:185BH         PUBLIC        ?C?SLDIV
   -------         ENDMOD        ?C?SLDIV
 
   -------         MODULE        ?C?LNEG
@@ -580,19 +604,29 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         ENDMOD        ?C?CCASE
 
   -------         MODULE        PUTCHAR
-  C:1948H         PUBLIC        _PUTCHAR
+  C:1905H         PUBLIC        _PUTCHAR
   -------         ENDMOD        PUTCHAR
+
+  -------         MODULE        ABS
+  C:19E8H         PUBLIC        _ABS
+  -------         ENDMOD        ABS
+
+BL51 BANKED LINKER/LOCATER V6.22            12/29/2015  23:27:48  PAGE 10
+
 
   -------         MODULE        ?C?ULDIV
   C:0F2DH         PUBLIC        ?C?ULDIV
   -------         ENDMOD        ?C?ULDIV
 
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?SAMPLEACCELERATION?F31X_SPI0_MASTER
+
 ******************************************************************************
 >> 
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0467H BYTE (55%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0426H BYTE (51%) *
 >> 
 ******************************************************************************
 >> 
 
-Program Size: data=110.2 xdata=0 code=4666
-LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
+Program Size: data=110.2 xdata=0 code=4613
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
