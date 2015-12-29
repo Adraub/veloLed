@@ -25,7 +25,7 @@
 
 // Value used to sample accelerometer values
 #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-#define  DATA_SAMPLE    		20     //Number of values sampled to evaluate rotation speed
+#define  DATA_SAMPLE    		15     //Number of values sampled to evaluate rotation speed
 
 
 // Referenced used in the program
@@ -59,6 +59,11 @@ bit Error_Flag = 0;
 
 unsigned char Command = 0x00;
 
+
+   int speed[DATA_SAMPLE]={0};
+   long moyenne;
+   int iter=0;
+
 //-----------------------------------------------------------------------------
 // Function Prototypes
 //-----------------------------------------------------------------------------
@@ -83,12 +88,7 @@ void SPI_Array_Read (unsigned char);
 //-----------------------------------------------------------------------------
 void main (void)
 {
-   long accel[2]={0,0};
-   int speed[DATA_SAMPLE]={0};
-   long moyenne;
-   int iter=0;
-   unsigned long norme;
-   unsigned long count=0;
+   
 
 
   	Init_Device ();                     // Initializes hardware peripherals
@@ -103,48 +103,9 @@ void main (void)
 	BLUE=0;
 	GREEN=1;
 
-   // TEST BEGIN --------------------------------------------------------------
 
-   
-
-
-
-   
-
-   while (1) {                            // spin forever
-	// Read the array of xyz of acceleration
-  	 SPI_Array_Read (0x32);
-
-
-	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
-	// (8-bits). To get the full value, two bytes must be combined for each axis.
-  //The Y value is stored in values[2] and values[3].
- 	 accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
-  //The Z value is stored in values[4] and values[5].
- 	 accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
-	//Convert those values in mg (mg=10^-3*gravity)
- 	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
- 	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
-
-	 speed[iter]=(int)accel[1];
-	 
-	 iter=iter+1;
-	 if(iter==DATA_SAMPLE)
-	 {
-   		for (count = 0; count < DATA_SAMPLE; count++)
-		{
-			moyenne+=(long)abs(speed[count]);
-		}
-		moyenne/=DATA_SAMPLE;
-		//convert medium strength momentum to a timer 2 reload value
-	 	norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
-		iter=0;
-		//display value on bluetooth
-		printf("y= %ld mg, ",accel[0]);
-		printf("z= %ld mg, ",accel[1]);
-	  	printf("norme= %lu mg \n",norme);
-		printf("moyZ= %ld rad/s\n",moyenne);
-	 }
+   while (1) {
+   	sampleAcceleration ();
 	 Delay();
    }
    
@@ -478,6 +439,43 @@ void Delay (void)
 
 void sampleAcceleration (void)
 {
+	
+   long accel[2]={0,0};
+   unsigned long norme;
+   unsigned int count;
+	                            // spin forever
+	// Read the array of xyz of acceleration
+  	 SPI_Array_Read (0x32);
 
+
+	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
+	// (8-bits). To get the full value, two bytes must be combined for each axis.
+  //The Y value is stored in values[2] and values[3].
+ 	 accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
+  //The Z value is stored in values[4] and values[5].
+ 	 accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
+	//Convert those values in mg (mg=10^-3*gravity)
+ 	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
+ 	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
+
+	 speed[iter]=(int)accel[1];
+	 
+	 iter=iter+1;
+	 if(iter==DATA_SAMPLE)
+	 {
+   		for (count = 0; count < DATA_SAMPLE; count++)
+		{
+			moyenne+=(long)abs(speed[count]);
+		}
+		moyenne/=DATA_SAMPLE;
+		//convert medium strength momentum to a timer 2 reload value
+	 	norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
+		iter=0;
+		//display value on bluetooth
+		printf("y= %ld mg, ",accel[0]);
+		printf("z= %ld mg, ",accel[1]);
+	  	printf("norme= %lu mg \n",norme);
+		printf("moyZ= %ld rad/s\n",moyenne);
+	 }
 }
 
