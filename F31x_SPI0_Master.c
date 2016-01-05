@@ -25,8 +25,11 @@
 
 // Value used to sample accelerometer values
 #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-#define  DATA_SAMPLE    		15     //Number of values sampled to evaluate rotation speed
-
+#define  DATA_SAMPLE    		200     //Number of values sampled to evaluate rotation speed
+#define  RADIUS    				47     //millimeter
+#define  GRAVITY   				9.81     //m/s^2
+#define  PI    					3.14     
+#define  WHEELSECTORS    		80
 
 // Referenced used in the program
 sbit LED0 = P2^0;
@@ -60,9 +63,9 @@ bit Error_Flag = 0;
 unsigned char Command = 0x00;
 
 
-   int speed[DATA_SAMPLE]={0};
-   long moyenne;
+   unsigned long moyenne;
    int iter=0;
+   unsigned int counter=0;
 
 //-----------------------------------------------------------------------------
 // Function Prototypes
@@ -193,7 +196,7 @@ void Init_Device (void)
    Oscillator_Init ();
    Port_Init ();
    SPI0_Init ();
-   Timer2_Init (0xFFF0);              // Init Timer2
+   Timer2_Init (0x7FFF);              // Init Timer2
    UART0_Init();
    EA = 1;            // Enable global interrupts
    NSSMD0 = 1;  //Disable communication on SPI bus
@@ -410,13 +413,18 @@ void UART0_Init()
 //
 void Timer2_ISR (void) interrupt 5
 {
-   if (~SW2) {
-      LED = 1;
-   }
-   else {
-      LED = ~LED;
-   }
+	if(counter==3)
+	{
 
+	   if (~SW2) {
+	      LED = 1;
+	   }
+	   else {
+	      LED = ~LED;
+	   }
+	   counter=0;
+	}
+	counter++;
    TF2H = 0;                              // clear Timer2 interrupt flag
 }
 
@@ -458,24 +466,24 @@ void sampleAcceleration (void)
  	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
  	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
 
-	 speed[iter]=(int)accel[1];
-	 
+	 moyenne+=(unsigned long)abs((int)accel[1]);
 	 iter=iter+1;
 	 if(iter==DATA_SAMPLE)
 	 {
-   		for (count = 0; count < DATA_SAMPLE; count++)
-		{
-			moyenne+=(long)abs(speed[count]);
-		}
 		moyenne/=DATA_SAMPLE;
+		
+		count=(unsigned int)((SYSCLK/12)/(sqrt((moyenne*9GRAVITY/RADIUS)/1000)/(2*PI)*WHEELSECTORS));
 		//convert medium strength momentum to a timer 2 reload value
 	 	norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
 		iter=0;
+		Timer2_Init ((int)count);
 		//display value on bluetooth
 		printf("y= %ld mg, ",accel[0]);
 		printf("z= %ld mg, ",accel[1]);
 	  	printf("norme= %lu mg \n",norme);
-		printf("moyZ= %ld rad/s\n",moyenne);
+		printf("moyZ= %lu rad/s\n",moyenne);
+		printf("decaltimer= %u rad/s\n",count);
+		moyenne=0;
 	 }
 }
 

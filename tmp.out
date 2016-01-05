@@ -3,15 +3,12 @@ BL51 BANKED LINKER/LOCATER V6.22 - SN: Eval Version
 COPYRIGHT KEIL ELEKTRONIK GmbH 1987 - 2009
 "C:\Users\Adraub\Documents\GitHub\veloLed\F31x_SPI0_Master.obj"  TO "C:\Users\Adraub\Documents\GitHub\veloLed\veloLed" RS(256) PL(68) PW(78) 
 
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?SAMPLEACCELERATION?F31X_SPI0_MASTER
-
 ******************************************************************************
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0426H BYTE (51%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0440H BYTE (53%) *
 ******************************************************************************
 
 >> 
 >> 
 >> 
-Program Size: data=110.2 xdata=0 code=4613
-LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
+Program Size: data=70.2 xdata=0 code=4571
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
