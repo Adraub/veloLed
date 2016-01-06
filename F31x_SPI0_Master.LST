@@ -1,4 +1,4 @@
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 1   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 1   
 
 
 C51 COMPILER V9.50a, COMPILATION OF MODULE F31X_SPI0_MASTER
@@ -34,8 +34,8 @@ line level    source
   25          
   26          // Value used to sample accelerometer values
   27          #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-  28          #define  DATA_SAMPLE                    200     //Number of values sampled to evaluate rotation speed
-  29          #define  RADIUS                                 47     //millimeter
+  28          #define  DATA_SAMPLE                    500     //Number of values sampled to evaluate rotation speed
+  29          #define  RADIUS                                 0.047     //meter
   30          #define  GRAVITY                                9.81     //m/s^2
   31          #define  PI                                     3.14     
   32          #define  WHEELSECTORS                   80
@@ -62,7 +62,7 @@ line level    source
   53          //-----------------------------------------------------------------------------
   54          // Global Variables used in SPI communication
   55          //-----------------------------------------------------------------------------
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 2   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 2   
 
   56          
   57          unsigned char SPI_Data = 0xA5;
@@ -76,7 +76,7 @@ line level    source
   65          
   66             unsigned long moyenne;
   67             int iter=0;
-  68             int counter=0;
+  68             unsigned int counter=0;
   69          
   70          //-----------------------------------------------------------------------------
   71          // Function Prototypes
@@ -126,7 +126,7 @@ line level    source
  115   1      }
  116          
  117          /*Initialize system clock*/
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 3   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 3   
 
  118          void Oscillator_Init (void)
  119          {
@@ -144,7 +144,7 @@ line level    source
  131   1         P1MDOUT = 0x0D; 
  132   1               
  133   1         // Make color select push-pull and LED select open drain for LED control System              
- 134   1         P2MDOUT = 0x0F0; 
+ 134   1         P2MDOUT = 0xF0; 
  135   1            
  136   1         //to be deleted                 
  137   1         P3MDOUT = 0x08;                     // Make the LED push-pull
@@ -190,7 +190,7 @@ line level    source
  177   1              //BW_RATE register
  178   1         SPI_Byte_Write (0x2C);
  179   1         
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 4   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 4   
 
  180   1         //launch measurement
  181   1         SPI_Data = 0x08;
@@ -254,7 +254,7 @@ line level    source
  239   2            // polled mode
  240   2            if (state == 0)
  241   2            {
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 5   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 5   
 
  242   3               switch (Command)
  243   3               {
@@ -318,7 +318,7 @@ line level    source
  301   4                     state = 2;              // Any errors in the Command parsing
  302   4                                             // should go to state 2 where NSSMD0
  303   4                                             // is de-asserted
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 6   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 6   
 
  304   4               }
  305   3            }
@@ -382,7 +382,7 @@ line level    source
  363          void SPI_Array_Read (unsigned char addr)
  364          {
  365   1         while (!NSSMD0);                    // Wait until the SPI is free, in case
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 7   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 7   
 
  366   1                                             // it's already busy
  367   1         NSSMD0 = 0;
@@ -434,7 +434,7 @@ line level    source
  413          //
  414          void Timer2_ISR (void) interrupt 5
  415          {
- 416   1              if(counter==3)
+ 416   1              if(counter==20)
  417   1              {
  418   2      
  419   2                 if (~SW2) {
@@ -446,7 +446,7 @@ line level    source
  425   2                 counter=0;
  426   2              }
  427   1              counter++;
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 8   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 8   
 
  428   1         TF2H = 0;                              // clear Timer2 interrupt flag
  429   1      }
@@ -473,53 +473,57 @@ line level    source
  450   1              
  451   1         long accel[2]={0,0};
  452   1         unsigned long norme;
- 453   1         unsigned int count;
- 454   1                                          // spin forever
- 455   1              // Read the array of xyz of acceleration
- 456   1               SPI_Array_Read (0x32);
- 457   1      
+ 453   1         unsigned long numerateur, denumerateur;
+ 454   1         unsigned int count;
+ 455   1                                          // spin forever
+ 456   1              // Read the array of xyz of acceleration
+ 457   1               SPI_Array_Read (0x32);
  458   1      
- 459   1              //The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
- 460   1              // (8-bits). To get the full value, two bytes must be combined for each axis.
- 461   1        //The Y value is stored in values[2] and values[3].
- 462   1               accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
- 463   1        //The Z value is stored in values[4] and values[5].
- 464   1               accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
- 465   1              //Convert those values in mg (mg=10^-3*gravity)
- 466   1               accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
- 467   1               accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
- 468   1      
- 469   1               moyenne+=(unsigned long)abs((int)accel[1]);
- 470   1               iter=iter+1;
- 471   1               if(iter==DATA_SAMPLE)
- 472   1               {
- 473   2                      moyenne/=DATA_SAMPLE;
- 474   2                      
- 475   2                      count=(unsigned int)((SYSCLK/12)/(sqrt((moyenne*9GRAVITY/RADIUS)/1000)/(2*PI)*WHEELSECTORS));
- 476   2                      //convert medium strength momentum to a timer 2 reload value
- 477   2                      norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
- 478   2                      iter=0;
- 479   2                      Timer2_Init ((int)count);
- 480   2                      //display value on bluetooth
- 481   2                      printf("y= %ld mg, ",accel[0]);
- 482   2                      printf("z= %ld mg, ",accel[1]);
- 483   2                      printf("norme= %lu mg \n",norme);
- 484   2                      printf("moyZ= %lu rad/s\n",moyenne);
- 485   2                      printf("decaltimer= %u rad/s\n",count);
- 486   2                      moyenne=0;
- 487   2               }
- 488   1      }
- 489          
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/05/2016 21:31:23 PAGE 9   
+ 459   1      
+ 460   1              //The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
+ 461   1              // (8-bits). To get the full value, two bytes must be combined for each axis.
+ 462   1        //The Y value is stored in values[2] and values[3].
+ 463   1               accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
+ 464   1        //The Z value is stored in values[4] and values[5].
+ 465   1               accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
+ 466   1              //Convert those values in mg (mg=10^-3*gravity)
+ 467   1               accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
+ 468   1               accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
+ 469   1      
+ 470   1               moyenne+=(unsigned long)abs((int)accel[1]);
+ 471   1               iter=iter+1;
+ 472   1               if(iter==DATA_SAMPLE)
+ 473   1               {
+ 474   2                      moyenne/=DATA_SAMPLE;
+ 475   2                      numerateur=SYSCLK/12;
+ 476   2                      denumerateur=(sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI);
+ 477   2                      count=(unsigned int)(numerateur/denumerateur);
+ 478   2                      //convert medium strength momentum to a timer 2 reload value
+ 479   2                      norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
+ 480   2                      iter=0;
+ 481   2                      Timer2_Init ((int)count);
+ 482   2                      //display value on bluetooth
+ 483   2                      printf("y= %ld mg, ",accel[0]);
+ 484   2                      printf("z= %ld mg, ",accel[1]);
+ 485   2                      printf("norme= %lu mg \n",norme);
+ 486   2                      printf("moyZ= %lu rad/s\n",moyenne);
+ 487   2                      printf("num= %lu \n",numerateur);
+ 488   2                      printf("denum= %lu \n",denumerateur);
+ 489   2                      printf("decaltimer= %u \n",count);
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/06/2016 18:52:31 PAGE 9   
 
+ 490   2                      moyenne=0;
+ 491   2               }
+ 492   1      }
+ 493          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    965    ----
-   CONSTANT SIZE    =     87    ----
+   CODE SIZE        =   1033    ----
+   CONSTANT SIZE    =    106    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     18      18
+   DATA SIZE        =     18      26
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      1    ----
 END OF MODULE INFORMATION.

@@ -25,7 +25,7 @@
 
 // Value used to sample accelerometer values
 #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-#define  DATA_SAMPLE    		200     //Number of values sampled to evaluate rotation speed
+#define  DATA_SAMPLE    		500     //Number of values sampled to evaluate rotation speed
 #define  RADIUS    				47     //millimeter
 #define  GRAVITY   				9.81     //m/s^2
 #define  PI    					3.14     
@@ -65,7 +65,7 @@ unsigned char Command = 0x00;
 
    unsigned long moyenne;
    int iter=0;
-   int counter=0;
+   unsigned int counter=0;
 
 //-----------------------------------------------------------------------------
 // Function Prototypes
@@ -131,7 +131,7 @@ void PORT_Init (void)
    P1MDOUT = 0x0D; 
          
    // Make color select push-pull and LED select open drain for LED control System              
-   P2MDOUT = 0x0F0; 
+   P2MDOUT = 0xF0; 
       
    //to be deleted                 
    P3MDOUT = 0x08;                     // Make the LED push-pull
@@ -450,6 +450,7 @@ void sampleAcceleration (void)
 	
    long accel[2]={0,0};
    unsigned long norme;
+   unsigned long numerateur, denumerateur;
    unsigned int count;
 	                            // spin forever
 	// Read the array of xyz of acceleration
@@ -471,18 +472,21 @@ void sampleAcceleration (void)
 	 if(iter==DATA_SAMPLE)
 	 {
 		moyenne/=DATA_SAMPLE;
-		
-		count=(unsigned int)((SYSCLK/12)/(sqrt((moyenne*9GRAVITY/RADIUS)/1000)/(2*PI)*WHEELSECTORS));
+		numerateur=SYSCLK/12;
+		denumerateur=(sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI);
+		count=(unsigned int)(numerateur/denumerateur);
 		//convert medium strength momentum to a timer 2 reload value
 	 	norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
 		iter=0;
-		Timer2_Init ((int)count)
+		Timer2_Init ((int)count);
 		//display value on bluetooth
 		printf("y= %ld mg, ",accel[0]);
 		printf("z= %ld mg, ",accel[1]);
 	  	printf("norme= %lu mg \n",norme);
 		printf("moyZ= %lu rad/s\n",moyenne);
-		printf("decaltimer= %u rad/s\n",count);
+		printf("num= %lu \n",numerateur);
+		printf("denum= %lu \n",denumerateur);
+		printf("decaltimer= %u \n",count);
 		moyenne=0;
 	 }
 }
