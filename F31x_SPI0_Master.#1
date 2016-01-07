@@ -25,7 +25,7 @@
 
 // Value used to sample accelerometer values
 #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-#define  DATA_SAMPLE    		500     //Number of values sampled to evaluate rotation speed
+#define  DATA_SAMPLE    		250     //Number of values sampled to evaluate rotation speed
 #define  RADIUS    				0.047     //meter
 #define  GRAVITY   				9.81     //m/s^2
 #define  PI    					3.14     
@@ -36,9 +36,10 @@ sbit LED0 = P2^0;
 sbit LED1 = P2^1;
 sbit LED2 = P2^2;
 sbit LED3 = P2^3;
-sbit RED = P2^4;
-sbit GREEN = P2^5;
-sbit BLUE = P2^6;
+sbit LED4 = P2^4;
+sbit RED = P2^5;
+sbit GREEN = P2^6;
+sbit BLUE = P2^7;
 //delete below
 sbit LED = P3^3;                       // LED='1' means ON
 sbit SW2 = P0^7;                          // SW2='0' means switch pressed
@@ -91,25 +92,30 @@ void SPI_Array_Read (unsigned char);
 //-----------------------------------------------------------------------------
 void main (void)
 {
-   
+   unsigned char inputcharacter;       // Used to store character from UART
 
 
   	Init_Device ();                     // Initializes hardware peripherals
 
 	LED = 0;
 	//enable leds and set them green
-	LED0 = 1;
-	LED1 = 1;
-	LED2 = 1;
-	LED3 = 1;
+	LED0 = 0;
+	LED1 = 0;
+	LED2 = 0;
+	LED3 = 0;
+	LED4 = 0;
 	RED=0;
 	BLUE=0;
-	GREEN=1;
+	GREEN=0;
 
 
    while (1) {
    	sampleAcceleration ();
 	 Delay();
+	 //printf ("\nEnter character: ");
+     // inputcharacter = getchar ();
+     // printf ("\nCharacter entered : %c",inputcharacter);
+    //  printf ("\n      Value in Hex: %bx",inputcharacter);
    }
    
 }
@@ -130,7 +136,7 @@ void PORT_Init (void)
 	// Make SCK, MOSI, and NSS push-pull for SPIO communication                    
    P1MDOUT = 0x0D; 
          
-   // Make color select push-pull and LED select open drain for LED control System              
+   // Make color select LED select open drain for LED control System              
    P2MDOUT = 0xF0; 
       
    //to be deleted                 
@@ -413,14 +419,14 @@ void UART0_Init()
 //
 void Timer2_ISR (void) interrupt 5
 {
-	if(counter==3)
+	if(counter==20)
 	{
 
 	   if (~SW2) {
-	      LED = 1;
+	      GREEN = 1;
 	   }
 	   else {
-	      LED = ~LED;
+	      GREEN = ~GREEN;
 	   }
 	   counter=0;
 	}
