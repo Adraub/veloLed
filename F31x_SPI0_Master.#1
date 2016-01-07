@@ -29,7 +29,7 @@
 #define  RADIUS    				0.047     //meter
 #define  GRAVITY   				9.81     //m/s^2
 #define  PI    					3.14     
-#define  WHEELSECTORS    		80
+#define  WHEELSECTORS    		35
 
 // Referenced used in the program
 sbit LED0 = P2^0;
@@ -40,9 +40,6 @@ sbit LED4 = P2^4;
 sbit RED = P2^5;
 sbit GREEN = P2^6;
 sbit BLUE = P2^7;
-//delete below
-sbit LED = P3^3;                       // LED='1' means ON
-sbit SW2 = P0^7;                          // SW2='0' means switch pressed
 
 //-----------------------------------------------------------------------------
 // 16-bit SFR Definitions for 'F30x
@@ -58,15 +55,18 @@ sfr16 TMR2     = 0xcc;                    // Timer2 counter
 unsigned char SPI_Data = 0xA5;
 
 unsigned char SPI_Data_Array[MAX_BUFFER_SIZE] = {0};
+unsigned char schema[WHEELSECTORS] = {0};
 
 bit Error_Flag = 0;
 
 unsigned char Command = 0x00;
 
-
-   unsigned long moyenne;
-   int iter=0;
-   unsigned int counter=0;
+//used to store DATA_SAMPLE values summed
+unsigned long moyenne;
+//number of iteration of accelero measures
+int iter=0;
+//position on the wheel (max WHEELSECTORS)
+unsigned char counter=0;
 
 //-----------------------------------------------------------------------------
 // Function Prototypes
@@ -92,12 +92,16 @@ void SPI_Array_Read (unsigned char);
 //-----------------------------------------------------------------------------
 void main (void)
 {
-   unsigned char inputcharacter;       // Used to store character from UART
-
+  
+//number of iteration of accelero measures
+int iter2=0;
 
   	Init_Device ();                     // Initializes hardware peripherals
-
-	LED = 0;
+	while(iter2<WHEELSECTORS){
+    	schema[iter2] = getchar ();
+		//schema[iter2] = (unsigned char) rand();
+		iter2++;
+	}
 	//enable leds and set them green
 	LED0 = 0;
 	LED1 = 0;
@@ -112,10 +116,6 @@ void main (void)
    while (1) {
    	sampleAcceleration ();
 	 Delay();
-	 //printf ("\nEnter character: ");
-     // inputcharacter = getchar ();
-     // printf ("\nCharacter entered : %c",inputcharacter);
-    //  printf ("\n      Value in Hex: %bx",inputcharacter);
    }
    
 }
@@ -419,18 +419,15 @@ void UART0_Init()
 //
 void Timer2_ISR (void) interrupt 5
 {
-	if(counter==20)
+	P2=schema[counter];
+	counter++;
+	if(counter==WHEELSECTORS)
 	{
+		
 
-	   if (~SW2) {
-	      GREEN = 1;
-	   }
-	   else {
-	      GREEN = ~GREEN;
-	   }
+	   //GREEN = ~GREEN;
 	   counter=0;
 	}
-	counter++;
    TF2H = 0;                              // clear Timer2 interrupt flag
 }
 
@@ -455,8 +452,6 @@ void sampleAcceleration (void)
 {
 	
    long accel[2]={0,0};
-   unsigned long norme;
-   unsigned long numerateur, denumerateur;
    unsigned int count;
 	                            // spin forever
 	// Read the array of xyz of acceleration
@@ -478,20 +473,15 @@ void sampleAcceleration (void)
 	 if(iter==DATA_SAMPLE)
 	 {
 		moyenne/=DATA_SAMPLE;
-		numerateur=SYSCLK/12;
-		denumerateur=(sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI);
-		count=(unsigned int)(numerateur/denumerateur);
+		count=(unsigned int)((SYSCLK/12)/((sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI)));
 		//convert medium strength momentum to a timer 2 reload value
-	 	norme=sqrt(accel[0]*accel[0]+accel[1]*accel[1]);
 		iter=0;
 		Timer2_Init ((int)count);
 		//display value on bluetooth
-		printf("y= %ld mg, ",accel[0]);
-		printf("z= %ld mg, ",accel[1]);
-	  	printf("norme= %lu mg \n",norme);
-		printf("moyZ= %lu rad/s\n",moyenne);
-		printf("num= %lu \n",numerateur);
-		printf("denum= %lu \n",denumerateur);
+		//printf("y= %ld mg, ",accel[0]);
+		//printf("z= %ld mg, ",accel[1]);
+	  	//printf("norme= %u mg \n",(unsigned int)sqrt(accel[0]*accel[0]+accel[1]*accel[1]));
+		//printf("moyZ= %lu rad/s\n",moyenne);
 		printf("decaltimer= %u \n",count);
 		moyenne=0;
 	 }
