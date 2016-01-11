@@ -1,5 +1,5 @@
 # veloLed
-![Rotating device](misc/LISA.png)
+![Rotating device](misc/LISA.PNG)
 
 An electronic project aiming to build a LED line that can draw various form when linked with a wheel.
 
