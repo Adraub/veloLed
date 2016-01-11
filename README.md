@@ -1,2 +1,19 @@
 # veloLed
-An electronic project aiming to build a LED line that can draw various form when linked with a bicycle wheel
+
+An electronic project aiming to build a LED line that can draw various form when linked with a wheel.
+
+It looks like a homemade MonkeyLight bicycle device.
+
+![alt tag](https://raw.github.com/adraub/veloLed/branch/master/misc/IMG_20160111_102439.jpg)
+
+Made with a C8051F310 Silicon Laboratories microcontroller, an ADXL345 Analog Device accelerometer and a EGBT-046S Bluetooth module.
+
+It has 5 RGB DELs that we pilot with a matricial linking.
+
+There is a Java HMI that allow us to send on reboot a new user-defined scheme for the device through a Bluetooth Serial Port.
+
+![alt tag](https://raw.github.com/adraub/veloLed/branch/master/misc/IMG_20160107_220810.jpg)
+
+Youtube video incoming!
+
+Made at CentraleSupelec, Paris, France
