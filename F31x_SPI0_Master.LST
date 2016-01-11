@@ -1,4 +1,4 @@
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 1   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 1   
 
 
 C51 COMPILER V9.50a, COMPILATION OF MODULE F31X_SPI0_MASTER
@@ -62,7 +62,7 @@ line level    source
   53          //-----------------------------------------------------------------------------
   54          
   55          unsigned char SPI_Data = 0xA5;
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 2   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 2   
 
   56          
   57          unsigned char SPI_Data_Array[MAX_BUFFER_SIZE] = {0};
@@ -105,7 +105,7 @@ line level    source
   94          {
   95   1        
   96   1      //number of iteration of accelero measures
-  97   1      int iter2=0;
+  97   1      char iter2=0;
   98   1      
   99   1              Init_Device ();                     // Initializes hardware peripherals
  100   1              while(iter2<WHEELSECTORS){
@@ -126,7 +126,7 @@ line level    source
  115   1      
  116   1         while (1) {
  117   2              sampleAcceleration ();
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 3   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 3   
 
  118   2               Delay();
  119   2         }
@@ -190,7 +190,7 @@ line level    source
  177   1              SPI_Data = 0x20;
  178   1              //write in FIFO_CTL register
  179   1         SPI_Byte_Write (0x38);
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 4   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 4   
 
  180   1      
  181   1         //switch on normal power mode
@@ -254,7 +254,7 @@ line level    source
  239   2            // <state> == 1: for READ commands (first time, only a dummy byte is
  240   2            //               sent but the second time, the data must be read from
  241   2            //               SPI0DAT)
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 5   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 5   
 
  242   2            // <state> == 2: NSS = 1 to end the transfer, final byte read
  243   2            //
@@ -318,7 +318,7 @@ line level    source
  301   4                     {
  302   5                        state = 2;
  303   5                     }
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 6   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 6   
 
  304   4      
  305   4                     break;
@@ -382,7 +382,7 @@ line level    source
  363   1         // The rest of this command will be handled by the SPI ISR, which will
  364   1         // trigger when SPIF is set from sending the Command
  365   1      }
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 7   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 7   
 
  366          
  367          
@@ -446,7 +446,7 @@ line level    source
  425   1              {
  426   2                      
  427   2      
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 8   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 8   
 
  428   2                 //GREEN = ~GREEN;
  429   2                 counter=0;
@@ -510,16 +510,16 @@ line level    source
  487   2               }
  488   1      }
  489          
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:46:24 PAGE 9   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 9   
 
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    823    ----
+   CODE SIZE        =    811    ----
    CONSTANT SIZE    =     25    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     52      14
+   DATA SIZE        =     52      13
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      1    ----
 END OF MODULE INFORMATION.

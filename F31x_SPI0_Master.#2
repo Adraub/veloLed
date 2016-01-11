@@ -66,7 +66,7 @@ unsigned long moyenne;
 //number of iteration of accelero measures
 int iter=0;
 //position on the wheel (max WHEELSECTORS)
-unsigned int counter=0;
+unsigned char counter=0;
 
 //-----------------------------------------------------------------------------
 // Function Prototypes

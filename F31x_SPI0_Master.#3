@@ -98,15 +98,7 @@ int iter2=0;
 
   	Init_Device ();                     // Initializes hardware peripherals
 	while(iter2<WHEELSECTORS){
-		printf ("\nEnter character: ");
     	schema[iter2] = getchar ();
-    	printf ("\nCharacter entered : %c",schema[iter2]);
-		Delay();
-		Delay();
-		Delay();
-		Delay();
-		Delay();
-		Delay();
 		//schema[iter2] = (unsigned char) rand();
 		iter2++;
 	}

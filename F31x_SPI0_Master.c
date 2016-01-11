@@ -66,7 +66,7 @@ unsigned long moyenne;
 //number of iteration of accelero measures
 int iter=0;
 //position on the wheel (max WHEELSECTORS)
-unsigned int counter=0;
+unsigned char counter=0;
 
 //-----------------------------------------------------------------------------
 // Function Prototypes
@@ -94,7 +94,7 @@ void main (void)
 {
   
 //number of iteration of accelero measures
-int iter2=0;
+char iter2=0;
 
   	Init_Device ();                     // Initializes hardware peripherals
 	while(iter2<WHEELSECTORS){
