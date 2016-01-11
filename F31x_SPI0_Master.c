@@ -1,4 +1,3 @@
-
 #include <C8051F310.h>               
 #include "stdio.h"
 #include "math.h"
@@ -26,20 +25,11 @@
 // Value used to sample accelerometer values
 #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
 #define  DATA_SAMPLE    		250     //Number of values sampled to evaluate rotation speed
-#define  RADIUS    				0.047     //meter
-#define  GRAVITY   				9.81     //m/s^2
+#define  RADIUS    				0.047   //Distance between rotation center and acceleromter
+#define  GRAVITY   				9.81    //Gravity m/s^2
 #define  PI    					3.14     
-#define  WHEELSECTORS    		35
+#define  WHEELSECTORS    		40		//Number of LED instruction during one round
 
-// Referenced used in the program
-sbit LED0 = P2^0;
-sbit LED1 = P2^1;
-sbit LED2 = P2^2;
-sbit LED3 = P2^3;
-sbit LED4 = P2^4;
-sbit RED = P2^5;
-sbit GREEN = P2^6;
-sbit BLUE = P2^7;
 
 //-----------------------------------------------------------------------------
 // 16-bit SFR Definitions for 'F30x
@@ -55,16 +45,21 @@ sfr16 TMR2     = 0xcc;                    // Timer2 counter
 unsigned char SPI_Data = 0xA5;
 
 unsigned char SPI_Data_Array[MAX_BUFFER_SIZE] = {0};
-unsigned char schema[WHEELSECTORS] = {0};
+
 
 bit Error_Flag = 0;
 
 unsigned char Command = 0x00;
 
-//used to store DATA_SAMPLE values summed
+//stores the different value of the scheme
+unsigned char schema[WHEELSECTORS] = {0};
+
+//used to store DATA_SAMPLE values summed of unsigned z-acceleration
 unsigned long moyenne;
-//number of iteration of accelero measures
+
+//iteration of accelerometer measures
 int iter=0;
+
 //position on the wheel (max WHEELSECTORS)
 unsigned char counter=0;
 
@@ -93,27 +88,19 @@ void SPI_Array_Read (unsigned char);
 void main (void)
 {
   
-//number of iteration of accelero measures
-char iter2=0;
+	//number of iteration of char received
+	char iter2=0;
 
   	Init_Device ();                     // Initializes hardware peripherals
+
+	//obtain scheme from bluetooth
 	while(iter2<WHEELSECTORS){
     	schema[iter2] = getchar ();
-		//schema[iter2] = (unsigned char) rand();
 		iter2++;
 	}
-	//enable leds and set them green
-	LED0 = 0;
-	LED1 = 0;
-	LED2 = 0;
-	LED3 = 0;
-	LED4 = 0;
-	RED=0;
-	BLUE=0;
-	GREEN=0;
-
 
    while (1) {
+   	//sample accelerometer measures
    	sampleAcceleration ();
 	 Delay();
    }
@@ -136,8 +123,8 @@ void PORT_Init (void)
 	// Make SCK, MOSI, and NSS push-pull for SPIO communication                    
    P1MDOUT = 0x0D; 
          
-   // Make color select LED select open drain for LED control System              
-   P2MDOUT = 0xF0; 
+   // Make color and select LED pins push pull             
+   P2MDOUT = 0xFF; 
       
    //to be deleted                 
    P3MDOUT = 0x08;                     // Make the LED push-pull
@@ -423,10 +410,8 @@ void Timer2_ISR (void) interrupt 5
 	counter++;
 	if(counter==WHEELSECTORS)
 	{
-		
-
-	   //GREEN = ~GREEN;
-	   counter=0;
+			//scheme over, restart
+		   counter=0;
 	}
    TF2H = 0;                              // clear Timer2 interrupt flag
 }
@@ -438,7 +423,7 @@ void Timer2_ISR (void) interrupt 5
 // Return Value : None
 // Parameters   : None
 //
-// Delay for little while (used for blinking the LEDs)
+// Delay for little while (used for accelerometer sampling)
 //
 //-----------------------------------------------------------------------------
 void Delay (void)
@@ -448,33 +433,39 @@ void Delay (void)
    for (count = 20000; count > 0; count--);
 }
 
+
+/*Read and apply values obtained from accelerometer*/
 void sampleAcceleration (void)
 {
-	
+	//contains y and z acceleration values
    long accel[2]={0,0};
+   //value to be set on timer2 servoing
    unsigned int count;
-	                            // spin forever
+
 	// Read the array of xyz of acceleration
   	 SPI_Array_Read (0x32);
 
 
 	//The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
 	// (8-bits). To get the full value, two bytes must be combined for each axis.
-  //The Y value is stored in values[2] and values[3].
+  //The Y value 
  	 accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
-  //The Z value is stored in values[4] and values[5].
+  //The Z value
  	 accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
 	//Convert those values in mg (mg=10^-3*gravity)
  	 accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
  	 accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
-
+	
+	//store value
 	 moyenne+=(unsigned long)abs((int)accel[1]);
 	 iter=iter+1;
+
 	 if(iter==DATA_SAMPLE)
 	 {
+	 	//sampling is complete
 		moyenne/=DATA_SAMPLE;
+		//calculate timer2 reload value in correspondance with rotation speed
 		count=(unsigned int)((SYSCLK/12)/((sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI)));
-		//convert medium strength momentum to a timer 2 reload value
 		iter=0;
 		Timer2_Init ((int)count);
 		//display value on bluetooth

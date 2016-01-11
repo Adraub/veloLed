@@ -1,4 +1,4 @@
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 1   
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 1   
 
 
 C51 COMPILER V9.50a, COMPILATION OF MODULE F31X_SPI0_MASTER
@@ -7,520 +7,511 @@ COMPILER INVOKED BY: C:\Keil\C51\BIN\c51.exe F31x_SPI0_Master.c DB OE BR INCDIR(
 
 line level    source
 
-   1          
-   2          #include <C8051F310.h>               
-   3          #include "stdio.h"
-   4          #include "math.h"
-   5          
-   6          //-----------------------------------------------------------------------------
-   7          // Global Constants
-   8          //-----------------------------------------------------------------------------
-   9          
-  10          #define SYSCLK             24500000    // Internal oscillator frequency in Hz
-  11          
-  12          #define SPI_CLOCK          5000000      // Maximum SPI clock
-  13          
-  14          #define MAX_BUFFER_SIZE    6           // Maximum buffer Master SPI will receive
-  15          
-  16          // Instruction Set for SPI
-  17          #define  SPI_WRITE         0x04        // Send a byte from the Master to the
-  18                                                 // Slave
-  19          #define  SPI_READ          0x08        // Send a byte from the Slave to the
-  20                                                 // Master
-  21          #define  SPI_READ_BUFFER   0x32        // Send a series of bytes from the Slave
-  22                                                 // to the Master
-  23          #define  ERROR_OCCURRED    0x40        // Indicator for the Slave to tell the
-  24                                                 // Master an error occurred
-  25          
-  26          // Value used to sample accelerometer values
-  27          #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
-  28          #define  DATA_SAMPLE                    250     //Number of values sampled to evaluate rotation speed
-  29          #define  RADIUS                                 0.047     //meter
-  30          #define  GRAVITY                                9.81     //m/s^2
-  31          #define  PI                                     3.14     
-  32          #define  WHEELSECTORS                   35
+   1          #include <C8051F310.h>               
+   2          #include "stdio.h"
+   3          #include "math.h"
+   4          
+   5          //-----------------------------------------------------------------------------
+   6          // Global Constants
+   7          //-----------------------------------------------------------------------------
+   8          
+   9          #define SYSCLK             24500000    // Internal oscillator frequency in Hz
+  10          
+  11          #define SPI_CLOCK          5000000      // Maximum SPI clock
+  12          
+  13          #define MAX_BUFFER_SIZE    6           // Maximum buffer Master SPI will receive
+  14          
+  15          // Instruction Set for SPI
+  16          #define  SPI_WRITE         0x04        // Send a byte from the Master to the
+  17                                                 // Slave
+  18          #define  SPI_READ          0x08        // Send a byte from the Slave to the
+  19                                                 // Master
+  20          #define  SPI_READ_BUFFER   0x32        // Send a series of bytes from the Slave
+  21                                                 // to the Master
+  22          #define  ERROR_OCCURRED    0x40        // Indicator for the Slave to tell the
+  23                                                 // Master an error occurred
+  24          
+  25          // Value used to sample accelerometer values
+  26          #define  ACCELERO_RESOLUTION    31.2   //In mg/LSB, resolution of accelerometer
+  27          #define  DATA_SAMPLE                    250     //Number of values sampled to evaluate rotation speed
+  28          #define  RADIUS                                 0.047   //Distance between rotation center and acceleromter
+  29          #define  GRAVITY                                9.81    //Gravity m/s^2
+  30          #define  PI                                     3.14     
+  31          #define  WHEELSECTORS                   40              //Number of LED instruction during one round
+  32          
   33          
-  34          // Referenced used in the program
-  35          sbit LED0 = P2^0;
-  36          sbit LED1 = P2^1;
-  37          sbit LED2 = P2^2;
-  38          sbit LED3 = P2^3;
-  39          sbit LED4 = P2^4;
-  40          sbit RED = P2^5;
-  41          sbit GREEN = P2^6;
-  42          sbit BLUE = P2^7;
-  43          
-  44          //-----------------------------------------------------------------------------
-  45          // 16-bit SFR Definitions for 'F30x
-  46          //-----------------------------------------------------------------------------
-  47          
-  48          sfr16 TMR2RL   = 0xca;                    // Timer2 reload value
-  49          sfr16 TMR2     = 0xcc;                    // Timer2 counter
-  50          
-  51          //-----------------------------------------------------------------------------
-  52          // Global Variables used in SPI communication
-  53          //-----------------------------------------------------------------------------
-  54          
-  55          unsigned char SPI_Data = 0xA5;
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 2   
+  34          //-----------------------------------------------------------------------------
+  35          // 16-bit SFR Definitions for 'F30x
+  36          //-----------------------------------------------------------------------------
+  37          
+  38          sfr16 TMR2RL   = 0xca;                    // Timer2 reload value
+  39          sfr16 TMR2     = 0xcc;                    // Timer2 counter
+  40          
+  41          //-----------------------------------------------------------------------------
+  42          // Global Variables used in SPI communication
+  43          //-----------------------------------------------------------------------------
+  44          
+  45          unsigned char SPI_Data = 0xA5;
+  46          
+  47          unsigned char SPI_Data_Array[MAX_BUFFER_SIZE] = {0};
+  48          
+  49          
+  50          bit Error_Flag = 0;
+  51          
+  52          unsigned char Command = 0x00;
+  53          
+  54          //stores the different value of the scheme
+  55          unsigned char schema[WHEELSECTORS] = {0};
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 2   
 
   56          
-  57          unsigned char SPI_Data_Array[MAX_BUFFER_SIZE] = {0};
-  58          unsigned char schema[WHEELSECTORS] = {0};
+  57          //used to store DATA_SAMPLE values summed of unsigned z-acceleration
+  58          unsigned long moyenne;
   59          
-  60          bit Error_Flag = 0;
-  61          
-  62          unsigned char Command = 0x00;
-  63          
-  64          //used to store DATA_SAMPLE values summed
-  65          unsigned long moyenne;
-  66          //number of iteration of accelero measures
-  67          int iter=0;
-  68          //position on the wheel (max WHEELSECTORS)
-  69          unsigned char counter=0;
-  70          
-  71          //-----------------------------------------------------------------------------
-  72          // Function Prototypes
-  73          //-----------------------------------------------------------------------------
-  74          
-  75          void Oscillator_Init (void);
-  76          void Port_Init (void);
-  77          void SPI0_Init (void);
-  78          void Accelerometer_Init (void);
-  79          void Init_Device (void);
-  80          void Timer2_Init (int);
-  81          void Timer2_ISR (void);
-  82          void UART0_Init (void);
-  83          void Delay(void);
-  84          void sampleAcceleration (void);
-  85          
-  86          void SPI_Byte_Write (unsigned char);
-  87          void SPI_Byte_Read (unsigned char);
-  88          void SPI_Array_Read (unsigned char);
-  89          
-  90          //-----------------------------------------------------------------------------
-  91          // main() Routine
-  92          //-----------------------------------------------------------------------------
-  93          void main (void)
-  94          {
-  95   1        
-  96   1      //number of iteration of accelero measures
-  97   1      char iter2=0;
-  98   1      
-  99   1              Init_Device ();                     // Initializes hardware peripherals
- 100   1              while(iter2<WHEELSECTORS){
- 101   2              schema[iter2] = getchar ();
- 102   2                      //schema[iter2] = (unsigned char) rand();
- 103   2                      iter2++;
- 104   2              }
- 105   1              //enable leds and set them green
- 106   1              LED0 = 0;
- 107   1              LED1 = 0;
- 108   1              LED2 = 0;
- 109   1              LED3 = 0;
- 110   1              LED4 = 0;
- 111   1              RED=0;
- 112   1              BLUE=0;
- 113   1              GREEN=0;
- 114   1      
- 115   1      
- 116   1         while (1) {
- 117   2              sampleAcceleration ();
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 3   
+  60          //iteration of accelerometer measures
+  61          int iter=0;
+  62          
+  63          //position on the wheel (max WHEELSECTORS)
+  64          unsigned char counter=0;
+  65          
+  66          //-----------------------------------------------------------------------------
+  67          // Function Prototypes
+  68          //-----------------------------------------------------------------------------
+  69          
+  70          void Oscillator_Init (void);
+  71          void Port_Init (void);
+  72          void SPI0_Init (void);
+  73          void Accelerometer_Init (void);
+  74          void Init_Device (void);
+  75          void Timer2_Init (int);
+  76          void Timer2_ISR (void);
+  77          void UART0_Init (void);
+  78          void Delay(void);
+  79          void sampleAcceleration (void);
+  80          
+  81          void SPI_Byte_Write (unsigned char);
+  82          void SPI_Byte_Read (unsigned char);
+  83          void SPI_Array_Read (unsigned char);
+  84          
+  85          //-----------------------------------------------------------------------------
+  86          // main() Routine
+  87          //-----------------------------------------------------------------------------
+  88          void main (void)
+  89          {
+  90   1        
+  91   1              //number of iteration of char received
+  92   1              char iter2=0;
+  93   1      
+  94   1              Init_Device ();                     // Initializes hardware peripherals
+  95   1      
+  96   1              //obtain scheme from bluetooth
+  97   1              while(iter2<WHEELSECTORS){
+  98   2              schema[iter2] = getchar ();
+  99   2                      iter2++;
+ 100   2              }
+ 101   1      
+ 102   1         while (1) {
+ 103   2              //sample accelerometer measures
+ 104   2              sampleAcceleration ();
+ 105   2               Delay();
+ 106   2         }
+ 107   1         
+ 108   1      }
+ 109          
+ 110          /*Initialize system clock*/
+ 111          void Oscillator_Init (void)
+ 112          {
+ 113   1              OSCICN = 0xC3;                     // Set the internal oscillator to 24.5 MHz
+ 114   1              RSTSRC = 0x04;                     // Enable missing clock detector
+ 115   1      }
+ 116          
+ 117          /*Select I/O ports functions*/
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 3   
 
- 118   2               Delay();
- 119   2         }
- 120   1         
- 121   1      }
- 122          
- 123          /*Initialize system clock*/
- 124          void Oscillator_Init (void)
- 125          {
- 126   1              OSCICN = 0xC3;                     // Set the internal oscillator to 24.5 MHz
- 127   1              RSTSRC = 0x04;                     // Enable missing clock detector
- 128   1      }
- 129          
- 130          /*Select I/O ports functions*/
- 131          void PORT_Init (void)
- 132          {
- 133   1               // set TxD (P0.4) as push-pull & RxD as open-drain for bluetooth serial communication
- 134   1              P0MDOUT |= 0x10;  
- 135   1      
- 136   1              // Make SCK, MOSI, and NSS push-pull for SPIO communication                    
- 137   1         P1MDOUT = 0x0D; 
- 138   1               
- 139   1         // Make color select LED select open drain for LED control System              
- 140   1         P2MDOUT = 0xF0; 
- 141   1            
- 142   1         //to be deleted                 
- 143   1         P3MDOUT = 0x08;                     // Make the LED push-pull
- 144   1      
- 145   1              //enable uart (bluetooth) and spi (accelerometer)
- 146   1              XBR0=0x03;           
- 147   1              XBR1=0x40; 
- 148   1               
- 149   1              //Translate SPI to port 1
- 150   1              P0SKIP=0xCF;                  
- 151   1      }
- 152          
- 153          /*Apply settings for the SPI accelerometer communication*/
- 154          void SPI0_Init()
- 155          {
- 156   1         SPI0CFG   = 0x70;                   // Enable the SPI as a Master CKPHA = '1', CKPOL = '1'
- 157   1         SPI0CN    = 0x09;                   // 4-wire Single Master, SPI enabled
- 158   1         SPI0CKR   = (SYSCLK/(2*SPI_CLOCK))-1; // SPI clock frequency equation from the datasheet
- 159   1         ESPI0 = 1;                          // Enable SPI interrupts
- 160   1      
- 161   1      }
- 162          
- 163          
- 164          /*Send all the information to launch the accelerometer throught SPI*/
- 165          void Accelerometer_Init (){
- 166   1              
- 167   1              SPI_Byte_Read (0x00);
- 168   1              // SPI_Data should now be set to 0xE5 if everything is fine
- 169   1      
- 170   1         //We set the accelerometer on 4-wire mode SPI, with a range of +/-16g
- 171   1         //with a resolution of 10bits
- 172   1         SPI_Data = 0x03; 
- 173   1         //write in DATA_FORMAT register
- 174   1         SPI_Byte_Write (0x31);
- 175   1              
- 176   1              //Accelerometer mode bypass & interruption INT2 set
- 177   1              SPI_Data = 0x20;
- 178   1              //write in FIFO_CTL register
- 179   1         SPI_Byte_Write (0x38);
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 4   
+ 118          void PORT_Init (void)
+ 119          {
+ 120   1               // set TxD (P0.4) as push-pull & RxD as open-drain for bluetooth serial communication
+ 121   1              P0MDOUT |= 0x10;  
+ 122   1      
+ 123   1              // Make SCK, MOSI, and NSS push-pull for SPIO communication                    
+ 124   1         P1MDOUT = 0x0D; 
+ 125   1               
+ 126   1         // Make color and select LED pins push pull             
+ 127   1         P2MDOUT = 0xFF; 
+ 128   1            
+ 129   1         //to be deleted                 
+ 130   1         P3MDOUT = 0x08;                     // Make the LED push-pull
+ 131   1      
+ 132   1              //enable uart (bluetooth) and spi (accelerometer)
+ 133   1              XBR0=0x03;           
+ 134   1              XBR1=0x40; 
+ 135   1               
+ 136   1              //Translate SPI to port 1
+ 137   1              P0SKIP=0xCF;                  
+ 138   1      }
+ 139          
+ 140          /*Apply settings for the SPI accelerometer communication*/
+ 141          void SPI0_Init()
+ 142          {
+ 143   1         SPI0CFG   = 0x70;                   // Enable the SPI as a Master CKPHA = '1', CKPOL = '1'
+ 144   1         SPI0CN    = 0x09;                   // 4-wire Single Master, SPI enabled
+ 145   1         SPI0CKR   = (SYSCLK/(2*SPI_CLOCK))-1; // SPI clock frequency equation from the datasheet
+ 146   1         ESPI0 = 1;                          // Enable SPI interrupts
+ 147   1      
+ 148   1      }
+ 149          
+ 150          
+ 151          /*Send all the information to launch the accelerometer throught SPI*/
+ 152          void Accelerometer_Init (){
+ 153   1              
+ 154   1              SPI_Byte_Read (0x00);
+ 155   1              // SPI_Data should now be set to 0xE5 if everything is fine
+ 156   1      
+ 157   1         //We set the accelerometer on 4-wire mode SPI, with a range of +/-16g
+ 158   1         //with a resolution of 10bits
+ 159   1         SPI_Data = 0x03; 
+ 160   1         //write in DATA_FORMAT register
+ 161   1         SPI_Byte_Write (0x31);
+ 162   1              
+ 163   1              //Accelerometer mode bypass & interruption INT2 set
+ 164   1              SPI_Data = 0x20;
+ 165   1              //write in FIFO_CTL register
+ 166   1         SPI_Byte_Write (0x38);
+ 167   1      
+ 168   1         //switch on normal power mode
+ 169   1              SPI_Data = 0x0A;
+ 170   1              //BW_RATE register
+ 171   1         SPI_Byte_Write (0x2C);
+ 172   1         
+ 173   1         //launch measurement
+ 174   1         SPI_Data = 0x08;
+ 175   1         // POWER_CTL register
+ 176   1         SPI_Byte_Write (0x2D);
+ 177   1      
+ 178   1              //Calibration correcting z axis constant measurement offset 
+ 179   1         SPI_Data = 0x07;
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 4   
 
- 180   1      
- 181   1         //switch on normal power mode
- 182   1              SPI_Data = 0x0A;
- 183   1              //BW_RATE register
- 184   1         SPI_Byte_Write (0x2C);
- 185   1         
- 186   1         //launch measurement
- 187   1         SPI_Data = 0x08;
- 188   1         // POWER_CTL register
- 189   1         SPI_Byte_Write (0x2D);
- 190   1      
- 191   1              //Calibration correcting z axis constant measurement offset 
- 192   1         SPI_Data = 0x07;
- 193   1         //OFSZ register
- 194   1         SPI_Byte_Write (0x20);
- 195   1      
- 196   1      }
- 197          
- 198          /* Init each parts of our system*/
- 199          void Init_Device (void)
- 200          {
- 201   1         PCA0MD &= ~0x40;                    // Disable the Watchdog Timer
- 202   1         Oscillator_Init ();
- 203   1         Port_Init ();
- 204   1         SPI0_Init ();
- 205   1         Timer2_Init (0x7FFF);              // Init Timer2
- 206   1         UART0_Init();
- 207   1         EA = 1;            // Enable global interrupts
- 208   1         NSSMD0 = 1;  //Disable communication on SPI bus
- 209   1         Accelerometer_Init ();
- 210   1      }
- 211          
- 212          /*SPI communication interruption from the example*/
- 213          void SPI_ISR (void) interrupt 6
- 214          {
- 215   1         static unsigned char array_index = 0;
- 216   1         static char state = 0;
- 217   1      
- 218   1         if (WCOL == 1)
- 219   1         {
- 220   2            // Write collision occurred
- 221   2            WCOL = 0;                        // Clear the write collision flag
- 222   2      
- 223   2            Error_Flag = 1;
- 224   2         }
- 225   1         else
- 226   1         {
- 227   2            if (SPI0DAT == ERROR_OCCURRED)
- 228   2            {
- 229   3               // This example recognizes when an error occurs, but does not include
- 230   3               // any error handling.  The transfer can be aborted or rescheduled,
- 231   3               // if desired.
- 232   3               Error_Flag = 1;
- 233   3            }
- 234   2      
- 235   2            // When the Master enters the ISR, the SPIF flag should be set from
- 236   2            // sending the Command byte.  This ISR handles the remaining steps of the
- 237   2            // SPI transfer process.
- 238   2            // <state> == 0: writing or reading 1 byte of data
- 239   2            // <state> == 1: for READ commands (first time, only a dummy byte is
- 240   2            //               sent but the second time, the data must be read from
- 241   2            //               SPI0DAT)
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 5   
+ 180   1         //OFSZ register
+ 181   1         SPI_Byte_Write (0x20);
+ 182   1      
+ 183   1      }
+ 184          
+ 185          /* Init each parts of our system*/
+ 186          void Init_Device (void)
+ 187          {
+ 188   1         PCA0MD &= ~0x40;                    // Disable the Watchdog Timer
+ 189   1         Oscillator_Init ();
+ 190   1         Port_Init ();
+ 191   1         SPI0_Init ();
+ 192   1         Timer2_Init (0x7FFF);              // Init Timer2
+ 193   1         UART0_Init();
+ 194   1         EA = 1;            // Enable global interrupts
+ 195   1         NSSMD0 = 1;  //Disable communication on SPI bus
+ 196   1         Accelerometer_Init ();
+ 197   1      }
+ 198          
+ 199          /*SPI communication interruption from the example*/
+ 200          void SPI_ISR (void) interrupt 6
+ 201          {
+ 202   1         static unsigned char array_index = 0;
+ 203   1         static char state = 0;
+ 204   1      
+ 205   1         if (WCOL == 1)
+ 206   1         {
+ 207   2            // Write collision occurred
+ 208   2            WCOL = 0;                        // Clear the write collision flag
+ 209   2      
+ 210   2            Error_Flag = 1;
+ 211   2         }
+ 212   1         else
+ 213   1         {
+ 214   2            if (SPI0DAT == ERROR_OCCURRED)
+ 215   2            {
+ 216   3               // This example recognizes when an error occurs, but does not include
+ 217   3               // any error handling.  The transfer can be aborted or rescheduled,
+ 218   3               // if desired.
+ 219   3               Error_Flag = 1;
+ 220   3            }
+ 221   2      
+ 222   2            // When the Master enters the ISR, the SPIF flag should be set from
+ 223   2            // sending the Command byte.  This ISR handles the remaining steps of the
+ 224   2            // SPI transfer process.
+ 225   2            // <state> == 0: writing or reading 1 byte of data
+ 226   2            // <state> == 1: for READ commands (first time, only a dummy byte is
+ 227   2            //               sent but the second time, the data must be read from
+ 228   2            //               SPI0DAT)
+ 229   2            // <state> == 2: NSS = 1 to end the transfer, final byte read
+ 230   2            //
+ 231   2            // Note: SPI_WRITE_BUFFER is not handled here because it's done in
+ 232   2            // polled mode
+ 233   2            if (state == 0)
+ 234   2            {
+ 235   3               switch (Command)
+ 236   3               {
+ 237   4      
+ 238   4                  case SPI_WRITE:
+ 239   4                     SPI0DAT = SPI_Data;
+ 240   4      
+ 241   4                     state = 2;              // Advance to the final state (only
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 5   
 
- 242   2            // <state> == 2: NSS = 1 to end the transfer, final byte read
- 243   2            //
- 244   2            // Note: SPI_WRITE_BUFFER is not handled here because it's done in
- 245   2            // polled mode
- 246   2            if (state == 0)
- 247   2            {
- 248   3               switch (Command)
- 249   3               {
- 250   4      
- 251   4                  case SPI_WRITE:
- 252   4                     SPI0DAT = SPI_Data;
- 253   4      
- 254   4                     state = 2;              // Advance to the final state (only
- 255   4                                             // writing one byte)
- 256   4      
- 257   4                     break;
+ 242   4                                             // writing one byte)
+ 243   4      
+ 244   4                     break;
+ 245   4      
+ 246   4                  case SPI_READ:
+ 247   4                     SPI0DAT = 0xFF;         // Send a dummy byte so the Slave can
+ 248   4                                             // send the data
+ 249   4      
+ 250   4                     state = 2;              // Advance to the final state (only
+ 251   4                                             // reading one byte)
+ 252   4      
+ 253   4                     break;
+ 254   4      
+ 255   4                  case SPI_READ_BUFFER:
+ 256   4                     SPI0DAT = 0xFF;         // Send a dummy byte so the Slave can
+ 257   4                                             // start sending the data
  258   4      
- 259   4                  case SPI_READ:
- 260   4                     SPI0DAT = 0xFF;         // Send a dummy byte so the Slave can
- 261   4                                             // send the data
- 262   4      
- 263   4                     state = 2;              // Advance to the final state (only
- 264   4                                             // reading one byte)
- 265   4      
- 266   4                     break;
+ 259   4                     state = 1;              // Advance to the next state where the
+ 260   4                                             // data can be received
+ 261   4                                             // The data from the slave is not
+ 262   4                                             // available until after the second
+ 263   4                                             // transfer is completed.
+ 264   4                                             // The dummy byte allows the slave to
+ 265   4                                             // send data, since the Master controls
+ 266   4                                             // SCK.
  267   4      
- 268   4                  case SPI_READ_BUFFER:
- 269   4                     SPI0DAT = 0xFF;         // Send a dummy byte so the Slave can
- 270   4                                             // start sending the data
- 271   4      
- 272   4                     state = 1;              // Advance to the next state where the
- 273   4                                             // data can be received
- 274   4                                             // The data from the slave is not
- 275   4                                             // available until after the second
- 276   4                                             // transfer is completed.
- 277   4                                             // The dummy byte allows the slave to
- 278   4                                             // send data, since the Master controls
- 279   4                                             // SCK.
- 280   4      
- 281   4                     break;
- 282   4      
- 283   4                  default:
- 284   4                     state = 2;              // Any errors in the Command parsing
- 285   4                                             // should go to state 2 where NSSMD0
- 286   4                                             // is de-asserted
- 287   4               }
- 288   3            }
- 289   2            else if (state == 1)             // This state is for READ_ARRAY
- 290   2            {                                // commands where the data must be read
- 291   3                                             // after the first dummy byte is sent
- 292   3               switch (Command)
- 293   3               {
- 294   4                  case SPI_READ_BUFFER:
- 295   4                     SPI_Data_Array[array_index] = SPI0DAT;
- 296   4                     SPI0DAT = 0xFF;
- 297   4      
- 298   4                     array_index++;
- 299   4      
- 300   4                     if (array_index == (MAX_BUFFER_SIZE-1))
- 301   4                     {
- 302   5                        state = 2;
- 303   5                     }
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 6   
+ 268   4                     break;
+ 269   4      
+ 270   4                  default:
+ 271   4                     state = 2;              // Any errors in the Command parsing
+ 272   4                                             // should go to state 2 where NSSMD0
+ 273   4                                             // is de-asserted
+ 274   4               }
+ 275   3            }
+ 276   2            else if (state == 1)             // This state is for READ_ARRAY
+ 277   2            {                                // commands where the data must be read
+ 278   3                                             // after the first dummy byte is sent
+ 279   3               switch (Command)
+ 280   3               {
+ 281   4                  case SPI_READ_BUFFER:
+ 282   4                     SPI_Data_Array[array_index] = SPI0DAT;
+ 283   4                     SPI0DAT = 0xFF;
+ 284   4      
+ 285   4                     array_index++;
+ 286   4      
+ 287   4                     if (array_index == (MAX_BUFFER_SIZE-1))
+ 288   4                     {
+ 289   5                        state = 2;
+ 290   5                     }
+ 291   4      
+ 292   4                     break;
+ 293   4                  default:
+ 294   4                     state = 2;              // Any errors in the Command parsing
+ 295   4                                             // should go to state 2 where NSSMD0
+ 296   4                                             // is de-asserted
+ 297   4               }
+ 298   3            }
+ 299   2            else if (state == 2)
+ 300   2            {
+ 301   3               switch (Command)
+ 302   3               {
+ 303   4                  case SPI_READ:
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 6   
 
- 304   4      
- 305   4                     break;
- 306   4                  default:
- 307   4                     state = 2;              // Any errors in the Command parsing
- 308   4                                             // should go to state 2 where NSSMD0
- 309   4                                             // is de-asserted
- 310   4               }
- 311   3            }
- 312   2            else if (state == 2)
- 313   2            {
- 314   3               switch (Command)
- 315   3               {
- 316   4                  case SPI_READ:
- 317   4                     SPI_Data = SPI0DAT;     // Read the data from the slave
- 318   4      
- 319   4                     break;
- 320   4      
- 321   4                  case SPI_READ_BUFFER:
- 322   4                     SPI_Data_Array[array_index] = SPI0DAT; // Read the last data
- 323   4                                                            // without sending a
- 324   4                                                            // dummy byte
- 325   4                                      array_index=0;
- 326   4      
- 327   4                     break;
- 328   4               }
- 329   3      
- 330   3               NSSMD0 = 1;                   // De-select the Slave
- 331   3      
- 332   3               state = 0;                    // Reset the state
- 333   3            }
- 334   2      
- 335   2            SPIF = 0;                        // Clear the SPIF flag
- 336   2         }
- 337   1      }
- 338          
+ 304   4                     SPI_Data = SPI0DAT;     // Read the data from the slave
+ 305   4      
+ 306   4                     break;
+ 307   4      
+ 308   4                  case SPI_READ_BUFFER:
+ 309   4                     SPI_Data_Array[array_index] = SPI0DAT; // Read the last data
+ 310   4                                                            // without sending a
+ 311   4                                                            // dummy byte
+ 312   4                                      array_index=0;
+ 313   4      
+ 314   4                     break;
+ 315   4               }
+ 316   3      
+ 317   3               NSSMD0 = 1;                   // De-select the Slave
+ 318   3      
+ 319   3               state = 0;                    // Reset the state
+ 320   3            }
+ 321   2      
+ 322   2            SPIF = 0;                        // Clear the SPIF flag
+ 323   2         }
+ 324   1      }
+ 325          
+ 326          
+ 327          /*Write a specified data on the register of the accelerometer*/
+ 328          void SPI_Byte_Write (unsigned char addr)
+ 329          {
+ 330   1         while (!NSSMD0);                    // Wait until the SPI is free
+ 331   1         NSSMD0 = 0;
+ 332   1         Command = SPI_WRITE;
+ 333   1         SPI0DAT = addr;
+ 334   1         while (!NSSMD0); 
+ 335   1              //wait until operation is finished
+ 336   1         // The rest of this command will be handled by the SPI ISR, which will
+ 337   1         // trigger when SPIF is set from sending the Command
+ 338   1      }
  339          
- 340          /*Write a specified data on the register of the accelerometer*/
- 341          void SPI_Byte_Write (unsigned char addr)
+ 340          /*Read a specified data on the register of the accelerometer*/
+ 341          void SPI_Byte_Read (unsigned char addr)
  342          {
- 343   1         while (!NSSMD0);                    // Wait until the SPI is free
- 344   1         NSSMD0 = 0;
- 345   1         Command = SPI_WRITE;
- 346   1         SPI0DAT = addr;
- 347   1         while (!NSSMD0); 
- 348   1              //wait until operation is finished
- 349   1         // The rest of this command will be handled by the SPI ISR, which will
- 350   1         // trigger when SPIF is set from sending the Command
- 351   1      }
- 352          
- 353          /*Read a specified data on the register of the accelerometer*/
- 354          void SPI_Byte_Read (unsigned char addr)
- 355          {
- 356   1         while (!NSSMD0);                    // Wait until the SPI is free, in case
- 357   1                                             // it's already busy
- 358   1         NSSMD0 = 0;
- 359   1         Command = SPI_READ;
- 360   1         SPI0DAT = 0x80 | addr;  //Set Read byte and no multiple bytes
- 361   1         while (!NSSMD0); 
- 362   1              //wait until operation is finished
- 363   1         // The rest of this command will be handled by the SPI ISR, which will
- 364   1         // trigger when SPIF is set from sending the Command
- 365   1      }
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 7   
+ 343   1         while (!NSSMD0);                    // Wait until the SPI is free, in case
+ 344   1                                             // it's already busy
+ 345   1         NSSMD0 = 0;
+ 346   1         Command = SPI_READ;
+ 347   1         SPI0DAT = 0x80 | addr;  //Set Read byte and no multiple bytes
+ 348   1         while (!NSSMD0); 
+ 349   1              //wait until operation is finished
+ 350   1         // The rest of this command will be handled by the SPI ISR, which will
+ 351   1         // trigger when SPIF is set from sending the Command
+ 352   1      }
+ 353          
+ 354          
+ 355          /*Read an array of data with size MAX_BUFFER_ARRAY and from the specified address*/
+ 356          void SPI_Array_Read (unsigned char addr)
+ 357          {
+ 358   1         while (!NSSMD0);                    // Wait until the SPI is free, in case
+ 359   1                                             // it's already busy
+ 360   1         NSSMD0 = 0;
+ 361   1         Command = SPI_READ_BUFFER;
+ 362   1         SPI0DAT = 0xC0 | addr; //Set Read byte and  multiple bytes
+ 363   1         while (!NSSMD0); 
+ 364   1      
+ 365   1         // The rest of this command will be handled by the SPI ISR, which will
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 7   
 
- 366          
- 367          
- 368          /*Read an array of data with size MAX_BUFFER_ARRAY and from the specified address*/
- 369          void SPI_Array_Read (unsigned char addr)
- 370          {
- 371   1         while (!NSSMD0);                    // Wait until the SPI is free, in case
- 372   1                                             // it's already busy
- 373   1         NSSMD0 = 0;
- 374   1         Command = SPI_READ_BUFFER;
- 375   1         SPI0DAT = 0xC0 | addr; //Set Read byte and  multiple bytes
- 376   1         while (!NSSMD0); 
+ 366   1         // trigger when SPIF is set from sending the Command
+ 367   1      }
+ 368          
+ 369          /*Init timer to launch interruption every n timer rise*/
+ 370          void Timer2_Init (int n)
+ 371          {
+ 372   1                                                // use SYSCLK/12 as timebase
+ 373   1         CKCON  &= ~0x10;                       // Timer2 clocked based on T2XCLK
+ 374   1         TMR2CN  = 0x04;                        // Stop Timer2 Clear TF2
+ 375   1         TMR2RL  = -n;                          // Init reload values
+ 376   1         ET2 = 1;
  377   1      
- 378   1         // The rest of this command will be handled by the SPI ISR, which will
- 379   1         // trigger when SPIF is set from sending the Command
- 380   1      }
- 381          
- 382          /*Init timer to launch interruption every n timer rise*/
- 383          void Timer2_Init (int n)
- 384          {
- 385   1                                                // use SYSCLK/12 as timebase
- 386   1         CKCON  &= ~0x10;                       // Timer2 clocked based on T2XCLK
- 387   1         TMR2CN  = 0x04;                        // Stop Timer2 Clear TF2
- 388   1         TMR2RL  = -n;                          // Init reload values
- 389   1         ET2 = 1;
- 390   1      
- 391   1      }
- 392          
- 393          
- 394          //-----------------------------------------------------------------------------
- 395          // UART0_Init
- 396          //-----------------------------------------------------------------------------
- 397          //
- 398          
- 399          
- 400          void UART0_Init()
- 401          {
- 402   1         //Timer 1 init
- 403   1         TH1     = 0x96;                        // débordement à 9600Hz
- 404   1         TMOD   |= 0x20;                        // mode2 autoreload
- 405   1         CKCON  &= 0xF4;                        // sysclk pour timer1
- 406   1         TR1     = 1;                           // timer1 run
- 407   1         REN0    = 1;                           // reception autorisée
- 408   1         SBUF0   = '\n';                        // pour commencer nouvelle  
- 409   1      }
- 410          
- 411          //-----------------------------------------------------------------------------
- 412          // Interrupt Service Routines
- 413          //-----------------------------------------------------------------------------
- 414          
- 415          //-----------------------------------------------------------------------------
- 416          // Timer2_ISR
- 417          //-----------------------------------------------------------------------------
- 418          // This routine changes the state of the LED whenever Timer2 overflows.
- 419          //
- 420          void Timer2_ISR (void) interrupt 5
- 421          {
- 422   1              P2=schema[counter];
- 423   1              counter++;
- 424   1              if(counter==WHEELSECTORS)
- 425   1              {
- 426   2                      
- 427   2      
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 8   
+ 378   1      }
+ 379          
+ 380          
+ 381          //-----------------------------------------------------------------------------
+ 382          // UART0_Init
+ 383          //-----------------------------------------------------------------------------
+ 384          //
+ 385          
+ 386          
+ 387          void UART0_Init()
+ 388          {
+ 389   1         //Timer 1 init
+ 390   1         TH1     = 0x96;                        // débordement à 9600Hz
+ 391   1         TMOD   |= 0x20;                        // mode2 autoreload
+ 392   1         CKCON  &= 0xF4;                        // sysclk pour timer1
+ 393   1         TR1     = 1;                           // timer1 run
+ 394   1         REN0    = 1;                           // reception autorisée
+ 395   1         SBUF0   = '\n';                        // pour commencer nouvelle  
+ 396   1      }
+ 397          
+ 398          //-----------------------------------------------------------------------------
+ 399          // Interrupt Service Routines
+ 400          //-----------------------------------------------------------------------------
+ 401          
+ 402          //-----------------------------------------------------------------------------
+ 403          // Timer2_ISR
+ 404          //-----------------------------------------------------------------------------
+ 405          // This routine changes the state of the LED whenever Timer2 overflows.
+ 406          //
+ 407          void Timer2_ISR (void) interrupt 5
+ 408          {
+ 409   1              P2=schema[counter];
+ 410   1              counter++;
+ 411   1              if(counter==WHEELSECTORS)
+ 412   1              {
+ 413   2                              //scheme over, restart
+ 414   2                         counter=0;
+ 415   2              }
+ 416   1         TF2H = 0;                              // clear Timer2 interrupt flag
+ 417   1      }
+ 418          
+ 419          //-----------------------------------------------------------------------------
+ 420          // Delay
+ 421          //-----------------------------------------------------------------------------
+ 422          //
+ 423          // Return Value : None
+ 424          // Parameters   : None
+ 425          //
+ 426          // Delay for little while (used for accelerometer sampling)
+ 427          //
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 8   
 
- 428   2                 //GREEN = ~GREEN;
- 429   2                 counter=0;
- 430   2              }
- 431   1         TF2H = 0;                              // clear Timer2 interrupt flag
- 432   1      }
- 433          
- 434          //-----------------------------------------------------------------------------
- 435          // Delay
- 436          //-----------------------------------------------------------------------------
- 437          //
- 438          // Return Value : None
- 439          // Parameters   : None
- 440          //
- 441          // Delay for little while (used for blinking the LEDs)
- 442          //
- 443          //-----------------------------------------------------------------------------
- 444          void Delay (void)
- 445          {
- 446   1         unsigned long count;
+ 428          //-----------------------------------------------------------------------------
+ 429          void Delay (void)
+ 430          {
+ 431   1         unsigned long count;
+ 432   1      
+ 433   1         for (count = 20000; count > 0; count--);
+ 434   1      }
+ 435          
+ 436          
+ 437          /*Read and apply values obtained from accelerometer*/
+ 438          void sampleAcceleration (void)
+ 439          {
+ 440   1              //contains y and z acceleration values
+ 441   1         long accel[2]={0,0};
+ 442   1         //value to be set on timer2 servoing
+ 443   1         unsigned int count;
+ 444   1      
+ 445   1              // Read the array of xyz of acceleration
+ 446   1               SPI_Array_Read (0x32);
  447   1      
- 448   1         for (count = 20000; count > 0; count--);
- 449   1      }
- 450          
- 451          void sampleAcceleration (void)
- 452          {
- 453   1              
- 454   1         long accel[2]={0,0};
- 455   1         unsigned int count;
- 456   1                                          // spin forever
- 457   1              // Read the array of xyz of acceleration
- 458   1               SPI_Array_Read (0x32);
- 459   1      
- 460   1      
- 461   1              //The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
- 462   1              // (8-bits). To get the full value, two bytes must be combined for each axis.
- 463   1        //The Y value is stored in values[2] and values[3].
- 464   1               accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
- 465   1        //The Z value is stored in values[4] and values[5].
- 466   1               accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
- 467   1              //Convert those values in mg (mg=10^-3*gravity)
- 468   1               accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
- 469   1               accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
- 470   1      
- 471   1               moyenne+=(unsigned long)abs((int)accel[1]);
- 472   1               iter=iter+1;
- 473   1               if(iter==DATA_SAMPLE)
- 474   1               {
- 475   2                      moyenne/=DATA_SAMPLE;
- 476   2                      count=(unsigned int)((SYSCLK/12)/((sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI)));
- 477   2                      //convert medium strength momentum to a timer 2 reload value
- 478   2                      iter=0;
- 479   2                      Timer2_Init ((int)count);
- 480   2                      //display value on bluetooth
- 481   2                      //printf("y= %ld mg, ",accel[0]);
- 482   2                      //printf("z= %ld mg, ",accel[1]);
- 483   2                      //printf("norme= %u mg \n",(unsigned int)sqrt(accel[0]*accel[0]+accel[1]*accel[1]));
- 484   2                      //printf("moyZ= %lu rad/s\n",moyenne);
- 485   2                      printf("decaltimer= %u \n",count);
- 486   2                      moyenne=0;
- 487   2               }
- 488   1      }
- 489          
-C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/07/2016 20:54:50 PAGE 9   
-
+ 448   1      
+ 449   1              //The ADXL345 gives 10-bit acceleration values, but they are stored as bytes
+ 450   1              // (8-bits). To get the full value, two bytes must be combined for each axis.
+ 451   1        //The Y value 
+ 452   1               accel[0] = ((int)SPI_Data_Array[3]<<8)|(int)SPI_Data_Array[2];
+ 453   1        //The Z value
+ 454   1               accel[1] = ((int)SPI_Data_Array[5]<<8)|(int)SPI_Data_Array[4];
+ 455   1              //Convert those values in mg (mg=10^-3*gravity)
+ 456   1               accel[0]=(int)(accel[0]*ACCELERO_RESOLUTION);
+ 457   1               accel[1]=(int)(accel[1]*ACCELERO_RESOLUTION);
+ 458   1              
+ 459   1              //store value
+ 460   1               moyenne+=(unsigned long)abs((int)accel[1]);
+ 461   1               iter=iter+1;
+ 462   1      
+ 463   1               if(iter==DATA_SAMPLE)
+ 464   1               {
+ 465   2                      //sampling is complete
+ 466   2                      moyenne/=DATA_SAMPLE;
+ 467   2                      //calculate timer2 reload value in correspondance with rotation speed
+ 468   2                      count=(unsigned int)((SYSCLK/12)/((sqrt(((moyenne*GRAVITY)/RADIUS)/1000)*WHEELSECTORS)/(2*PI)));
+ 469   2                      iter=0;
+ 470   2                      Timer2_Init ((int)count);
+ 471   2                      //display value on bluetooth
+ 472   2                      //printf("y= %ld mg, ",accel[0]);
+ 473   2                      //printf("z= %ld mg, ",accel[1]);
+ 474   2                      //printf("norme= %u mg \n",(unsigned int)sqrt(accel[0]*accel[0]+accel[1]*accel[1]));
+ 475   2                      //printf("moyZ= %lu rad/s\n",moyenne);
+ 476   2                      printf("decaltimer= %u \n",count);
+ 477   2                      moyenne=0;
+ 478   2               }
+ 479   1      }
+ 480          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    811    ----
+   CODE SIZE        =    795    ----
    CONSTANT SIZE    =     25    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     52      13
+   DATA SIZE        =     57      13
    IDATA SIZE       =   ----    ----
+C51 COMPILER V9.50a   F31X_SPI0_MASTER                                                     01/11/2016 11:37:21 PAGE 9   
+
    BIT SIZE         =      1    ----
 END OF MODULE INFORMATION.
 
