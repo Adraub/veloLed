@@ -1,18 +1,18 @@
-BL51 BANKED LINKER/LOCATER V6.22              01/11/2016  11:37:21  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22              01/11/2016  14:08:37  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
-C:\KEIL\C51\BIN\BL51.EXE C:\Users\Adraub\Documents\GitHub\veloLed\F31x_SPI0_Ma
->> ster.obj TO C:\Users\Adraub\Documents\GitHub\veloLed\veloLed RS (256) PL (6
->> 8) PW (78)
+C:\KEIL\C51\BIN\BL51.EXE C:\Users\Adraub\Documents\GitHub\veloLed\source\F31x_
+>> SPI0_Master.obj TO C:\Users\Adraub\Documents\GitHub\veloLed\source\veloLed 
+>> RS (256) PL (68) PW (78)
 
 
 MEMORY MODEL: SMALL WITH FLOATING POINT ARITHMETIC
 
 
 INPUT MODULES INCLUDED:
-  C:\Users\Adraub\Documents\GitHub\veloLed\F31x_SPI0_Master.obj (F31X_SPI0_MAS
->> TER)
+  C:\Users\Adraub\Documents\GitHub\veloLed\source\F31x_SPI0_Master.obj (F31X_S
+>> PI0_MASTER)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPMUL)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FPDIV)
   C:\KEIL\C51\LIB\C51FPS.LIB (?C?FCAST)
@@ -41,8 +41,8 @@ INPUT MODULES INCLUDED:
   C:\KEIL\C51\LIB\C51S.LIB (_GETKEY)
 
 
-LINK MAP OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31X_SP
->> I0_MASTER)
+LINK MAP OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\source\veloLed (
+>> F31X_SPI0_MASTER)
 
 
             TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
@@ -67,7 +67,7 @@ LINK MAP OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31X_SP
                     002EH     0005H                  *** GAP ***
             CODE    0033H     0003H     ABSOLUTE     
                     0036H     07CAH                  *** GAP ***
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 2
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 2
 
 
             CODE    0800H     0770H     UNIT         ?C?LIB_CODE
@@ -113,8 +113,8 @@ LINK MAP OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31X_SP
 
 
 
-OVERLAY MAP OF MODULE:   C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
->> X_SPI0_MASTER)
+OVERLAY MAP OF MODULE:   C:\Users\Adraub\Documents\GitHub\veloLed\source\veloL
+>> ed (F31X_SPI0_MASTER)
 
 
 SEGMENT                                            BIT_GROUP          DATA_GRO
@@ -135,7 +135,7 @@ SEGMENT                                            BIT_GROUP          DATA_GRO
   +--> ?PR?SAMPLEACCELERATION?F31X_SPI0_MASTER
   +--> ?PR?DELAY?F31X_SPI0_MASTER
 
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 3
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 3
 
 
 ?PR?INIT_DEVICE?F31X_SPI0_MASTER                -----    -----      -----    -
@@ -178,8 +178,8 @@ SEGMENT                                            BIT_GROUP          DATA_GRO
 
 
 
-SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
->> X_SPI0_MASTER)
+SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\source\veloL
+>> ed (F31X_SPI0_MASTER)
 
   VALUE           TYPE          NAME
   ----------------------------------
@@ -203,7 +203,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   B:0098H.4       PUBLIC        REN0
   D:00D9H         PUBLIC        PCA0MD
   D:00D8H         PUBLIC        PCA0CN
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 4
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 4
 
 
   D:00B8H         PUBLIC        IP
@@ -271,7 +271,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         PROC          OSCILLATOR_INIT
   C:18D9H         LINE#         111
   C:18D9H         LINE#         112
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 5
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 5
 
 
   C:18D9H         LINE#         113
@@ -339,7 +339,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   C:15DCH         LINE#         211
   C:15DEH         LINE#         213
   C:15DEH         LINE#         214
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 6
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 6
 
 
   C:15E3H         LINE#         215
@@ -407,7 +407,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   C:18A9H         LINE#         329
   C:18A9H         LINE#         330
   C:18ACH         LINE#         331
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 7
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 7
 
 
   C:18AEH         LINE#         332
@@ -475,7 +475,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         ENDDO         
   C:1730H         LINE#         429
   C:1730H         LINE#         430
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 8
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 8
 
 
   C:1730H         LINE#         433
@@ -543,7 +543,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   C:0A68H         PUBLIC        ?C?FPSUB
   -------         ENDMOD        ?C?FPADD
 
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 9
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 9
 
 
   -------         MODULE        ?C?FPROUND
@@ -611,7 +611,7 @@ SYMBOL TABLE OF MODULE:  C:\Users\Adraub\Documents\GitHub\veloLed\veloLed (F31
   -------         MODULE        _GETKEY
   C:18CFH         PUBLIC        _GETKEY
   -------         ENDMOD        _GETKEY
-BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  11:37:21  PAGE 10
+BL51 BANKED LINKER/LOCATER V6.22            01/11/2016  14:08:37  PAGE 10
 
 
 
