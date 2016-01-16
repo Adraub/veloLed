@@ -11,6 +11,8 @@ Made with a C8051F310 Silicon Laboratories microcontroller, an ADXL345 Analog De
 
 It has 5 RGB DELs that we pilot with a matricial linking.
 
+![User interface](misc/hmi.png)
+
 There is a Java HMI that allow us to send on reboot a new user-defined scheme for the device through a Bluetooth Serial Port.
 
 ![Test bench](misc/IMG_20160107_220810.png)
