@@ -3,6 +3,9 @@
 
 An electronic project aiming to build a LED line that can draw various form when linked with a wheel.
 
+[![Demonstration video](https://img.youtube.com/vi/GeBvcrWmyOo/0.jpg)](https://www.youtube.com/watch?v=GeBvcrWmyOo)
+https://www.youtube.com/watch?v=GeBvcrWmyOo
+
 It looks like a homemade MonkeyLight bicycle device.
 
 ![Microcontroller card](misc/IMG_20160111_102439.png)
@@ -17,6 +20,7 @@ There is a Java HMI that allow us to send on reboot a new user-defined scheme fo
 
 ![Test bench](misc/IMG_20160107_220810.png)
 
-Youtube video incoming!
+[![Servoing stability](https://img.youtube.com/vi/D07z28y17yA/0.jpg)](https://www.youtube.com/watch?v=D07z28y17yA)
+https://www.youtube.com/watch?v=D07z28y17yA
 
 Made at CentraleSupelec, Paris-Saclay, France
