@@ -430,7 +430,7 @@ void Delay (void)
 {
    unsigned long count;
 
-   for (count = 20000; count > 0; count--);
+   for (count = 10000; count > 0; count--);
 }
 
 
